@@ -1,0 +1,162 @@
+package com.oriooneee.jet.navigation.presentation
+
+import androidx.compose.ui.graphics.Color
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.oriooneee.jet.navigation.NavigationEngine
+import com.oriooneee.jet.navigation.domain.entities.NavigationDirection
+import com.oriooneee.jet.navigation.domain.entities.NavigationStep
+import com.oriooneee.jet.navigation.domain.entities.graph.Node
+import com.oriooneee.jet.navigation.domain.entities.graph.UniversityNavGraph
+import com.oriooneee.jet.navigation.domain.entities.plan.UniversityPlan
+import jetnavigation.jetnavigation.generated.resources.Res
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.InternalResourceApi
+
+data class NavigationUiState(
+    val allNodes: List<Node> = emptyList(),
+    val startNode: Node? = null,
+    val endNode: Node? = null,
+    val navigationSteps: List<NavigationStep> = emptyList(),
+    val currentStepIndex: Int = 0,
+    val routeStats: NavigationDirection? = null,
+    val isLoading: Boolean = false,
+    val error: String? = null
+) {
+    val currentStep: NavigationStep?
+        get() = if (navigationSteps.isNotEmpty() && currentStepIndex in navigationSteps.indices) {
+            navigationSteps[currentStepIndex]
+        } else null
+}
+
+class NavigationViewModel : ViewModel() {
+
+    private val _uiState = MutableStateFlow(NavigationUiState())
+    val uiState = _uiState.asStateFlow()
+
+    private val navigationEngine: MutableStateFlow<NavigationEngine?> = MutableStateFlow(null)
+
+    init {
+        loadData()
+    }
+
+    @OptIn(InternalResourceApi::class, ExperimentalResourceApi::class)
+    private fun loadData() {
+        viewModelScope.launch(Dispatchers.Default) {
+            _uiState.update { it.copy(isLoading = true) }
+
+            try {
+                val navGraphContent = Res.readBytes("files/navigation_graph.json").decodeToString()
+                val navGraph = Json.decodeFromString<UniversityNavGraph>(navGraphContent)
+
+                val sceneContent = Res.readBytes("files/scene.json").decodeToString()
+                val universityPlan = Json.decodeFromString<UniversityPlan>(sceneContent)
+
+                val engine = NavigationEngine(
+                    navGraph = navGraph,
+                    plan = universityPlan
+                )
+                navigationEngine.value = engine
+
+                val filteredNodes = navGraph.nodes.filter {
+                    !it.id.contains("TURN", ignoreCase = true) && !it.id.contains("STAIRS", ignoreCase = true)
+                }
+
+                _uiState.update {
+                    it.copy(
+                        allNodes = filteredNodes,
+                        isLoading = false
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false, error = e.message) }
+            }
+        }
+    }
+
+    fun onStartNodeSelected(node: Node) {
+        _uiState.update {
+            it.copy(
+                startNode = node,
+                navigationSteps = emptyList(),
+                routeStats = null,
+                currentStepIndex = 0
+            )
+        }
+    }
+
+    fun onEndNodeSelected(node: Node) {
+        _uiState.update {
+            it.copy(
+                endNode = node,
+                navigationSteps = emptyList(),
+                routeStats = null,
+                currentStepIndex = 0
+            )
+        }
+    }
+
+    fun calculateRoute(
+        planColor: Color,
+        directionColor: Color,
+        startColor: Color,
+        endColor: Color
+    ) {
+        val start = uiState.value.startNode ?: return
+        val end = uiState.value.endNode ?: return
+
+        viewModelScope.launch(Dispatchers.Default) {
+            _uiState.update { it.copy(isLoading = true, navigationSteps = emptyList()) }
+
+            try {
+                val engine = navigationEngine.filterNotNull().first()
+                val result = engine.getRoute(
+                    from = start,
+                    to = end,
+                    planColor = planColor,
+                    directionColor = directionColor,
+                    startNodeColor = startColor,
+                    endNodeColor = endColor
+                )
+
+                withContext(Dispatchers.Main) {
+                    _uiState.update {
+                        it.copy(
+                            navigationSteps = result.steps,
+                            routeStats = result,
+                            currentStepIndex = 0,
+                            isLoading = false
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false, error = e.message) }
+            }
+        }
+    }
+
+    fun nextStep() {
+        _uiState.update {
+            if (it.currentStepIndex < it.navigationSteps.lastIndex) {
+                it.copy(currentStepIndex = it.currentStepIndex + 1)
+            } else it
+        }
+    }
+
+    fun previousStep() {
+        _uiState.update {
+            if (it.currentStepIndex > 0) {
+                it.copy(currentStepIndex = it.currentStepIndex - 1)
+            } else it
+        }
+    }
+}
