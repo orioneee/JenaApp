@@ -83,7 +83,7 @@ class NavigationViewModel : ViewModel() {
         }
     }
 
-    fun onStartNodeSelected(node: Node) {
+    fun onStartNodeSelected(node: Node?) {
         _uiState.update {
             it.copy(
                 startNode = node,
@@ -94,7 +94,7 @@ class NavigationViewModel : ViewModel() {
         }
     }
 
-    fun onEndNodeSelected(node: Node) {
+    fun onEndNodeSelected(node: Node?) {
         _uiState.update {
             it.copy(
                 endNode = node,

@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenuItem
@@ -37,53 +38,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.oriooneee.jet.navigation.domain.entities.NavigationStep
 import com.oriooneee.jet.navigation.domain.entities.graph.Node
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun LocationSelector(
-    label: String,
-    selectedNode: Node?,
-    allNodes: List<Node>,
-    excludeNode: Node?,
-    icon: ImageVector,
-    modifier: Modifier = Modifier,
-    onNodeSelected: (Node) -> Unit
-) {
-    var expanded by remember { mutableStateOf(false) }
-
-    ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = { expanded = !expanded },
-        modifier = modifier
-    ) {
-        OutlinedTextField(
-            value = selectedNode?.id?.replace(Regex("^(AUD)_"), "") ?: "",
-            onValueChange = {},
-            readOnly = true,
-            label = { Text(label, fontSize = 14.sp) },
-            leadingIcon = { Icon(icon, contentDescription = null) },
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-            shape = RoundedCornerShape(16.dp),
-            modifier = Modifier
-                .menuAnchor()
-                .fillMaxWidth()
-        )
-        ExposedDropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            allNodes.filter { it != excludeNode && !it.id.contains("turn") }.forEach { node ->
-                DropdownMenuItem(
-                    text = { Text(node.id.replace(Regex("^(AUD)_"), "")) },
-                    onClick = {
-                        onNodeSelected(node)
-                        expanded = false
-                    }
-                )
-            }
-        }
-    }
-}
+import com.oriooneee.jet.navigation.presentation.navigation.LocalBackStack
+import com.oriooneee.jet.navigation.presentation.navigation.MyNavKey
 
 @Composable
 fun FloorBadge(

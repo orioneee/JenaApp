@@ -14,4 +14,6 @@ data class Node(
     val y: Double,
     @SerialName("z")
     val z: Double
-)
+){
+
+}

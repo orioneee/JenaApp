@@ -77,7 +77,7 @@ kotlin {
 
 android {
     namespace = "com.oriooneee.jet.navigation"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 21

@@ -48,15 +48,20 @@ kotlin {
 
 android {
     namespace = "sample.app"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
-        minSdk = 21
-        targetSdk = 35
+        minSdk = 23
+        targetSdk = 36
 
         applicationId = "sample.app.androidApp"
         versionCode = 1
         versionName = "1.0.0"
+    }
+    buildTypes {
+        debug {
+            isDebuggable = false
+        }
     }
 }
 
