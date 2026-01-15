@@ -7,7 +7,6 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Canvas
@@ -72,12 +71,14 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.withTransform
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
@@ -86,13 +87,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.oriooneee.jet.navigation.TextLabel
+import com.oriooneee.jet.navigation.FloorRenderData
 import com.oriooneee.jet.navigation.domain.entities.NavigationDirection
 import com.oriooneee.jet.navigation.domain.entities.NavigationStep
 import com.oriooneee.jet.navigation.domain.entities.graph.Node
-
-@Composable
-expect fun rememberVectorSvgPainter(bytes: ByteArray): Painter
 
 @Composable
 fun rememberZoomState(minScale: Float = 0.1f, maxScale: Float = 10f) =
@@ -177,21 +175,17 @@ fun NavigationScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    val planStrokeColor = MaterialTheme.colorScheme.onSurface
+    val planColor = MaterialTheme.colorScheme.onSurface
+    val planLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
     val routeColor = MaterialTheme.colorScheme.primary
-    val startNodeColor = MaterialTheme.colorScheme.tertiary
-    val endNodeColor = MaterialTheme.colorScheme.error
+    val startNodeColor = MaterialTheme.colorScheme.primary
+    val endNodeColor = MaterialTheme.colorScheme.primary
 
     LaunchedEffect(startNode, endNode) {
         viewModel.onStartNodeSelected(startNode)
         viewModel.onEndNodeSelected(endNode)
         if (startNode != null && endNode != null && startNode != endNode) {
-            viewModel.calculateRoute(
-                planStrokeColor,
-                routeColor,
-                startNodeColor,
-                endNodeColor
-            )
+            viewModel.calculateRoute()
         }
     }
 
@@ -234,10 +228,14 @@ fun NavigationScreen(
                             when (step) {
                                 is NavigationStep.ByFlor -> {
                                     Box(modifier = Modifier.fillMaxSize()) {
-                                        ZoomableSvgCanvas(
-                                            svgBytes = step.image,
+                                        ZoomableMapCanvas(
+                                            renderData = step.image,
                                             initFocusPoint = step.pointOfInterest,
-                                            textLabels = step.textLabels
+                                            planColor = planColor,
+                                            labelColor = planLabelColor,
+                                            routeColor = routeColor,
+                                            startNodeColor = startNodeColor,
+                                            endNodeColor = endNodeColor
                                         )
                                         FloorBadge(
                                             floorNumber = step.flor,
@@ -504,7 +502,7 @@ fun NavigationControls(
                         color = MaterialTheme.colorScheme.primary
                     )
                     Text(
-                        text = "${stats.totalDistanceMeters.toInt()} meters",
+                        text = "~${stats.totalDistanceMeters.toInt()} meters",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -550,14 +548,18 @@ fun NavigationControls(
 }
 
 @Composable
-fun ZoomableSvgCanvas(
-    svgBytes: ByteArray,
+fun ZoomableMapCanvas(
+    renderData: FloorRenderData,
     initFocusPoint: Offset,
-    textLabels: List<TextLabel>
+    planColor: Color,
+    labelColor: Color,
+    routeColor: Color,
+    startNodeColor: Color,
+    endNodeColor: Color
 ) {
-    val painter = rememberVectorSvgPainter(svgBytes)
     val zoomState = rememberZoomState()
     val textMeasurer = rememberTextMeasurer()
+    val contentSize = remember(renderData) { Size(renderData.width, renderData.height) }
 
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val density = LocalDensity.current
@@ -566,12 +568,12 @@ fun ZoomableSvgCanvas(
             with(density) { maxHeight.toPx() }
         )
 
-        LaunchedEffect(painter.intrinsicSize, containerSize, initFocusPoint) {
+        LaunchedEffect(contentSize, containerSize, initFocusPoint) {
             zoomState.updateContainerSize(containerSize)
             if (initFocusPoint != Offset.Zero) {
-                zoomState.zoomToPoint(initFocusPoint, painter.intrinsicSize, 3f)
+                zoomState.zoomToPoint(initFocusPoint, contentSize, 3f)
             } else {
-                zoomState.resetToFit(painter.intrinsicSize)
+                zoomState.resetToFit(contentSize)
             }
         }
 
@@ -588,11 +590,95 @@ fun ZoomableSvgCanvas(
                 translate(left = zoomState.offsetX, top = zoomState.offsetY)
                 scale(scaleX = zoomState.scale, scaleY = zoomState.scale, pivot = Offset.Zero)
             }) {
-                with(painter) { draw(size = intrinsicSize) }
+                val strokeWidth = maxOf(1f, contentSize.height * 0.001f)
 
-                textLabels.forEach { label ->
+                renderData.polygons.forEach { points ->
+                    if (points.isNotEmpty()) {
+                        val path = Path().apply {
+                            moveTo(points.first().x, points.first().y)
+                            for (i in 1 until points.size) {
+                                lineTo(points[i].x, points[i].y)
+                            }
+                            close()
+                        }
+                        drawPath(
+                            path = path,
+                            color = planColor.copy(alpha = 0.05f)
+                        )
+                        drawPath(
+                            path = path,
+                            color = planColor,
+                            style = Stroke(
+                                width = strokeWidth,
+                                cap = StrokeCap.Round,
+                                join = StrokeJoin.Round
+                            )
+                        )
+                    }
+                }
+
+                renderData.polylines.forEach { points ->
+                    if (points.isNotEmpty()) {
+                        val path = Path().apply {
+                            moveTo(points.first().x, points.first().y)
+                            for (i in 1 until points.size) {
+                                lineTo(points[i].x, points[i].y)
+                            }
+                        }
+                        drawPath(
+                            path = path,
+                            color = planColor,
+                            style = Stroke(
+                                width = strokeWidth,
+                                cap = StrokeCap.Round,
+                                join = StrokeJoin.Round
+                            )
+                        )
+                    }
+                }
+
+                renderData.singleLines.forEach { (start, end) ->
+                    drawLine(
+                        color = planColor,
+                        start = start,
+                        end = end,
+                        strokeWidth = strokeWidth,
+                        cap = StrokeCap.Round
+                    )
+                }
+
+                if (renderData.routePath.isNotEmpty()) {
+                    val routePath = Path().apply {
+                        val start = renderData.routePath.first()
+                        moveTo(start.x, start.y)
+                        for (i in 1 until renderData.routePath.size) {
+                            val p = renderData.routePath[i]
+                            lineTo(p.x, p.y)
+                        }
+                    }
+                    drawPath(
+                        path = routePath,
+                        color = routeColor.copy(alpha = 0.8f),
+                        style = Stroke(
+                            width = strokeWidth * 4f,
+                            cap = StrokeCap.Round,
+                            join = StrokeJoin.Round
+                        )
+                    )
+                }
+
+                renderData.startNode?.let {
+                    drawCircle(color = startNodeColor, radius = strokeWidth * 3f, center = it)
+                }
+                renderData.endNode?.let {
+                    drawCircle(color = endNodeColor, radius = strokeWidth * 3f, center = it)
+                }
+
+                renderData.textLabels.forEach { label ->
+                    val textColor = if (label.color == "#000000") Color.Black else labelColor
+
                     val textStyle = TextStyle(
-                        color = parseColor(label.color),
+                        color = textColor,
                         fontSize = label.fontSize.sp,
                         fontWeight = if (label.bold) FontWeight.Bold else FontWeight.Normal
                     )
@@ -632,7 +718,7 @@ fun ZoomableSvgCanvas(
 
         Column(
             modifier = Modifier
-                .align(Alignment.CenterEnd)
+                .align(Alignment.BottomEnd)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {

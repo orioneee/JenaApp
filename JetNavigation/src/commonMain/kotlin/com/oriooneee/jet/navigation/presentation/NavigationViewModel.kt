@@ -105,12 +105,7 @@ class NavigationViewModel : ViewModel() {
         }
     }
 
-    fun calculateRoute(
-        planColor: Color,
-        directionColor: Color,
-        startColor: Color,
-        endColor: Color
-    ) {
+    fun calculateRoute() {
         val start = uiState.value.startNode ?: return
         val end = uiState.value.endNode ?: return
 
@@ -122,10 +117,6 @@ class NavigationViewModel : ViewModel() {
                 val result = engine.getRoute(
                     from = start,
                     to = end,
-                    planColor = planColor,
-                    directionColor = directionColor,
-                    startNodeColor = startColor,
-                    endNodeColor = endColor
                 )
 
                 withContext(Dispatchers.Main) {

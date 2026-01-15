@@ -2,7 +2,6 @@ package com.oriooneee.jet.navigation
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import com.oriooneee.jet.navigation.domain.entities.NavigationDirection
 import com.oriooneee.jet.navigation.domain.entities.NavigationStep
 import com.oriooneee.jet.navigation.domain.entities.graph.Node
@@ -25,13 +24,24 @@ data class TextLabel(
     val hasBackground: Boolean = false
 )
 
+data class FloorRenderData(
+    val width: Float,
+    val height: Float,
+    val polygons: List<List<Offset>>,
+    val polylines: List<List<Offset>>,
+    val singleLines: List<Pair<Offset, Offset>>,
+    val routePath: List<Offset>,
+    val startNode: Offset?,
+    val endNode: Offset?,
+    val textLabels: List<TextLabel>
+)
+
 class NavigationEngine(
     private val navGraph: UniversityNavGraph,
     private val plan: UniversityPlan,
 ) {
     private val outputWidth = 2000.0
     private val paddingPct = 0.05
-    private val drawStairs = false
     private val zToFloor = mutableMapOf<Double, Int>()
 
     init {
@@ -68,15 +78,11 @@ class NavigationEngine(
 
     fun getRoute(
         from: Node,
-        to: Node,
-        planColor: Color,
-        directionColor: Color,
-        startNodeColor: Color,
-        endNodeColor: Color,
+        to: Node
     ): NavigationDirection {
         val path = findPath(from, to) ?: return NavigationDirection(emptyList(), 0.0)
         val totalDistance = calculateTotalDistance(path)
-        val steps = buildNavigationSteps(path, planColor, directionColor, startNodeColor, endNodeColor)
+        val steps = buildNavigationSteps(path)
         return NavigationDirection(steps, totalDistance)
     }
 
@@ -156,13 +162,7 @@ class NavigationEngine(
         return distance
     }
 
-    private fun buildNavigationSteps(
-        fullPath: List<Node>,
-        planColor: Color,
-        directionColor: Color,
-        startNodeColor: Color,
-        endNodeColor: Color
-    ): List<NavigationStep> {
+    private fun buildNavigationSteps(fullPath: List<Node>): List<NavigationStep> {
         val steps = mutableListOf<NavigationStep>()
         if (fullPath.isEmpty()) return steps
 
@@ -171,13 +171,13 @@ class NavigationEngine(
 
         val floorGroups = groupPathByFloor(fullPath)
 
-        val nonEmptyFloorGroups = floorGroups.filter { (_, stepNodes) ->
-            stepNodes.isNotEmpty()
+        val visibleFloorGroups = floorGroups.filter { (_, nodes) ->
+            nodes.any { !it.id.contains("STAIRS") }
         }
 
-        nonEmptyFloorGroups.forEachIndexed { index, (floorNum, stepNodes) ->
+        visibleFloorGroups.forEachIndexed { index, (floorNum, stepNodes) ->
             if (index > 0) {
-                val previousFloor = nonEmptyFloorGroups[index - 1].first
+                val previousFloor = visibleFloorGroups[index - 1].first
                 steps.add(
                     NavigationStep.TransitionToFlor(
                         to = floorNum,
@@ -194,19 +194,16 @@ class NavigationEngine(
                 else -> plan.flor1
             }
 
-            val (svgBytes, pointOfInterest, textLabels) = generateSvg(
-                floorNum = floorNum,
+            val renderData = generateFloorData(
                 flor = florData,
                 stepPath = stepNodes,
                 globalStart = globalStartNode,
-                globalEnd = globalEndNode,
-                planColor = planColor,
-                dirColor = directionColor,
-                startColor = startNodeColor,
-                endColor = endNodeColor
+                globalEnd = globalEndNode
             )
 
-            steps.add(NavigationStep.ByFlor(floorNum, svgBytes, pointOfInterest, textLabels))
+            val focusPoint = renderData.startNode ?: renderData.routePath.firstOrNull() ?: Offset.Zero
+
+            steps.add(NavigationStep.ByFlor(floorNum, renderData, focusPoint))
         }
 
         return steps
@@ -242,17 +239,12 @@ class NavigationEngine(
         return zToFloor[z] ?: 1
     }
 
-    private fun generateSvg(
-        floorNum: Int,
+    private fun generateFloorData(
         flor: Flor,
         stepPath: List<Node>,
         globalStart: Node,
-        globalEnd: Node,
-        planColor: Color,
-        dirColor: Color,
-        startColor: Color,
-        endColor: Color
-    ): Triple<ByteArray, Offset, List<TextLabel>> {
+        globalEnd: Node
+    ): FloorRenderData {
         val allX = mutableListOf<Double>()
         val allY = mutableListOf<Double>()
 
@@ -260,7 +252,7 @@ class NavigationEngine(
         flor.lines.forEach { l -> allX.add(l.x1); allX.add(l.x2); allY.add(l.y1); allY.add(l.y2) }
         flor.texts.forEach { t -> allX.add(t.x); allY.add(t.y) }
 
-        if (allX.isEmpty()) return Triple(ByteArray(0), Offset.Zero, emptyList())
+        if (allX.isEmpty()) return FloorRenderData(1f, 1f, emptyList(), emptyList(), emptyList(), emptyList(), null, null, emptyList())
 
         val minX = allX.minOrNull() ?: 0.0
         val maxX = allX.maxOrNull() ?: 1.0
@@ -270,76 +262,57 @@ class NavigationEngine(
         val dataW = maxX - minX
         val dataH = maxY - minY
 
-        if (dataW == 0.0 || dataH == 0.0) return Triple(ByteArray(0), Offset.Zero, emptyList())
+        if (dataW == 0.0 || dataH == 0.0) return FloorRenderData(1f, 1f, emptyList(), emptyList(), emptyList(), emptyList(), null, null, emptyList())
 
         val drawWidth = outputWidth * (1 - paddingPct * 2)
         val scale = drawWidth / dataW
         val outputHeight = (dataH * scale + (outputWidth * paddingPct * 2)).toInt()
         val padding = outputWidth * paddingPct
 
-        fun txVal(x: Double): Double = (x - minX) * scale + padding
-        fun tyVal(y: Double): Double = outputHeight - ((y - minY) * scale + padding)
+        fun tx(x: Double): Float = ((x - minX) * scale + padding).toFloat()
+        fun ty(y: Double): Float = (outputHeight - ((y - minY) * scale + padding)).toFloat()
 
-        fun tx(x: Double): String = txVal(x).round(1)
-        fun ty(y: Double): String = tyVal(y).round(1)
+        val polygons = mutableListOf<List<Offset>>()
+        val polylines = mutableListOf<List<Offset>>()
 
-        val startStepNode = stepPath.firstOrNull()
-        val pointOfInterest = if (startStepNode != null) {
-            Offset(
-                x = txVal(startStepNode.x).toFloat(),
-                y = tyVal(startStepNode.y).toFloat()
-            )
-        } else {
-            Offset.Zero
-        }
-
-        val stroke = max(1.0, outputHeight * 0.001)
-
-        val planHex = colorToHex(planColor)
-        val dirHex = colorToHex(dirColor)
-        val startHex = colorToHex(startColor)
-        val endHex = colorToHex(endColor)
-
-        val textLabels = mutableListOf<TextLabel>()
-
-        val sb = StringBuilder()
-        sb.append("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"${outputWidth.toInt()}\" height=\"$outputHeight\" viewBox=\"0 0 ${outputWidth.toInt()} $outputHeight\">")
-
-        sb.append("<g id=\"geometry\">")
         flor.polylines.forEach { poly ->
-            val ptsStr = poly.points.joinToString(" ") { "${tx(it[0])},${ty(it[1])}" }
+            val points = poly.points.map { Offset(tx(it[0]), ty(it[1])) }
             if (poly.closed) {
-                sb.append("<polygon points=\"$ptsStr\" fill=\"$planHex\" fill-opacity=\"0.05\" stroke=\"$planHex\" stroke-width=\"$stroke\" />")
+                polygons.add(points)
             } else {
-                sb.append("<polyline points=\"$ptsStr\" fill=\"none\" stroke=\"$planHex\" stroke-width=\"$stroke\" />")
+                polylines.add(points)
             }
         }
-        flor.lines.forEach { l ->
-            sb.append("<line x1=\"${tx(l.x1)}\" y1=\"${ty(l.y1)}\" x2=\"${tx(l.x2)}\" y2=\"${ty(l.y2)}\" stroke=\"$planHex\" stroke-width=\"$stroke\" />")
+
+        val singleLines = flor.lines.map { l ->
+            Pair(Offset(tx(l.x1), ty(l.y1)), Offset(tx(l.x2), ty(l.y2)))
         }
-        sb.append("</g>")
 
-        sb.append("<g id=\"route\">")
-        for (i in 0 until stepPath.size - 1) {
-            val u = stepPath[i]
-            val v = stepPath[i + 1]
-            if (!drawStairs && (u.id.contains("STAIRS") || v.id.contains("STAIRS"))) continue
-
-            sb.append("<line x1=\"${tx(u.x)}\" y1=\"${ty(u.y)}\" x2=\"${tx(v.x)}\" y2=\"${ty(v.y)}\" stroke=\"$dirHex\" stroke-width=\"${stroke * 4}\" stroke-linecap=\"round\" opacity=\"0.8\"/>")
+        val routePoints = mutableListOf<Offset>()
+        stepPath.forEach { node ->
+            if (!node.id.contains("STAIRS")) {
+                routePoints.add(Offset(tx(node.x), ty(node.y)))
+            }
         }
-        sb.append("</g>")
 
-        sb.append("<g id=\"markers\">")
+        var startNodeOffset: Offset? = null
+        var endNodeOffset: Offset? = null
+
         if (stepPath.isNotEmpty() && stepPath.first().id == globalStart.id) {
-            val startNode = stepPath.first()
-            sb.append("<circle cx=\"${tx(startNode.x)}\" cy=\"${ty(startNode.y)}\" r=\"${stroke * 3}\" fill=\"$startHex\" stroke=\"none\" />")
+            val start = stepPath.first()
+            if (!start.id.contains("STAIRS")) {
+                startNodeOffset = Offset(tx(start.x), ty(start.y))
+            }
+        }
+        if (stepPath.isNotEmpty() && stepPath.last().id == globalEnd.id) {
+            val end = stepPath.last()
+            if (!end.id.contains("STAIRS")) {
+                endNodeOffset = Offset(tx(end.x), ty(end.y))
+            }
         }
 
-        if (stepPath.isNotEmpty() && stepPath.last().id == globalEnd.id) {
-            val endNode = stepPath.last()
-            sb.append("<circle cx=\"${tx(endNode.x)}\" cy=\"${ty(endNode.y)}\" r=\"${stroke * 3}\" fill=\"$endHex\" stroke=\"none\" />")
-        }
-        sb.append("</g>")
+        val strokeBase = max(1.0, outputHeight * 0.001)
+        val textLabels = mutableListOf<TextLabel>()
 
         flor.texts.forEach { txt ->
             var clean = txt.text
@@ -354,23 +327,32 @@ class NavigationEngine(
                 .trim()
 
             if (clean.isNotEmpty()) {
-                val fontSize = (stroke * 6).toFloat()
+                val baseSize = (strokeBase * 6).toFloat()
+                val finalSize = if (clean.length > 7) baseSize * 0.7f else baseSize
+
                 textLabels.add(
                     TextLabel(
                         text = clean,
-                        x = txVal(txt.x).toFloat(),
-                        y = tyVal(txt.y).toFloat(),
-                        fontSize = fontSize,
-                        color = "#666666",
-                        bold = false,
-                        hasBackground = false
+                        x = tx(txt.x),
+                        y = ty(txt.y),
+                        fontSize = finalSize,
+                        color = "#666666"
                     )
                 )
             }
         }
 
-        sb.append("</svg>")
-        return Triple(sb.toString().encodeToByteArray(), pointOfInterest, textLabels)
+        return FloorRenderData(
+            width = outputWidth.toFloat(),
+            height = outputHeight.toFloat(),
+            polygons = polygons,
+            polylines = polylines,
+            singleLines = singleLines,
+            routePath = routePoints,
+            startNode = startNodeOffset,
+            endNode = endNodeOffset,
+            textLabels = textLabels
+        )
     }
 
     private fun Double.round(decimals: Int): String {
@@ -378,20 +360,6 @@ class NavigationEngine(
         repeat(decimals) { multiplier *= 10 }
         val rounded = (this * multiplier).roundToInt() / multiplier
         return rounded.toString()
-    }
-
-    private fun colorToHex(color: Color): String {
-        val argb = color.toArgb()
-        val r = (argb shr 16) and 0xFF
-        val g = (argb shr 8) and 0xFF
-        val b = argb and 0xFF
-
-        fun byteToHex(byte: Int): String {
-            val hex = byte.toString(16).uppercase()
-            return if (hex.length == 1) "0$hex" else hex
-        }
-
-        return "#${byteToHex(r)}${byteToHex(g)}${byteToHex(b)}"
     }
 }
 
