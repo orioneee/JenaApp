@@ -50,6 +50,9 @@ import androidx.compose.ui.unit.dp
 import com.oriooneee.jet.navigation.domain.entities.graph.Node
 import com.oriooneee.jet.navigation.domain.entities.graph.UniversityNavGraph
 import com.oriooneee.jet.navigation.domain.entities.plan.UniversityPlan
+import com.oriooneee.jet.navigation.presentation.KEY_SELECTED_END_NODE
+import com.oriooneee.jet.navigation.presentation.KEY_SELECTED_START_NODE
+import com.oriooneee.jet.navigation.presentation.navigation.LocalNavController
 import jetnavigation.jetnavigation.generated.resources.Res
 import kotlinx.serialization.json.Json
 import kotlin.math.abs
@@ -57,9 +60,10 @@ import kotlin.math.abs
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SelectDestinationScreen(
-    onSelect: (Node) -> Unit,
+    isStartNode: Boolean,
     onBack: () -> Unit
 ) {
+    val navController = LocalNavController.current
     var navigationGraph by remember { mutableStateOf(null as UniversityNavGraph?) }
     var universityPlan by remember { mutableStateOf(null as UniversityPlan?) }
     var searchQuery by remember { mutableStateOf("") }
@@ -103,15 +107,15 @@ fun SelectDestinationScreen(
         allNodes.filter { it.id.contains(searchQuery, ignoreCase = true) }
             .sortedWith(
                 compareBy<Node> { !it.id.contains("ENTER") }
-                .thenBy { !it.id.contains("WC") }.reversed()
-                .thenBy { node ->
-                    if (node.id.contains("AUD")) {
-                        Int.MAX_VALUE - (node.id.filter { it.isDigit() }.toIntOrNull() ?: 0)
-                    } else {
-                        Int.MAX_VALUE
+                    .thenBy { !it.id.contains("WC") }.reversed()
+                    .thenBy { node ->
+                        if (node.id.contains("AUD")) {
+                            Int.MAX_VALUE - (node.id.filter { it.isDigit() }.toIntOrNull() ?: 0)
+                        } else {
+                            Int.MAX_VALUE
+                        }
                     }
-                }
-                .thenBy { it.id }
+                    .thenBy { it.id }
             ).reversed()
     }
 
@@ -182,9 +186,11 @@ fun SelectDestinationScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
-                items(filteredNodes.filter {
-                    !it.label.isNullOrBlank()
-                }) { node ->
+                items(
+                    filteredNodes.filter {
+                        !it.label.isNullOrBlank()
+                    }
+                ) { node ->
                     ListItem(
                         headlineContent = {
                             Text(
@@ -196,7 +202,9 @@ fun SelectDestinationScreen(
                         modifier = Modifier
                             .clip(RoundedCornerShape(12.dp))
                             .clickable {
-                                onSelect(node)
+                                val key = if (isStartNode) KEY_SELECTED_START_NODE else KEY_SELECTED_END_NODE
+                                navController.previousBackStackEntry?.savedStateHandle?.set(key, node)
+                                navController.popBackStack()
                             }
                     )
                 }

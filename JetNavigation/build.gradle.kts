@@ -38,8 +38,9 @@ kotlin {
             implementation(compose.components.resources)
 
             implementation(libs.lifecycle.viewmodel.compose)
-            implementation(libs.navigation3.ui)
             implementation(libs.kotlinx.serialization.core)
+            implementation(libs.navigation.compose)
+
 
         }
 
@@ -50,7 +51,6 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.kotlinx.coroutines.android)
             implementation(libs.ktor.client.okhttp)
-            implementation(libs.androidsvg.aar)
         }
 
         jvmMain.dependencies {

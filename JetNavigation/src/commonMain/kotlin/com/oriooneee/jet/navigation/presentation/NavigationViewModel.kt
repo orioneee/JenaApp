@@ -92,6 +92,9 @@ class NavigationViewModel : ViewModel() {
                 currentStepIndex = 0
             )
         }
+        if(uiState.value.endNode != null && node != null){
+            calculateRoute()
+        }
     }
 
     fun onEndNodeSelected(node: Node?) {
@@ -103,9 +106,29 @@ class NavigationViewModel : ViewModel() {
                 currentStepIndex = 0
             )
         }
+        if(uiState.value.startNode != null && node != null){
+            calculateRoute()
+        }
+    }
+    fun swapNodes(){
+        val currentStart = uiState.value.startNode
+        val currentEnd =  uiState.value.endNode
+
+        _uiState.update {
+            it.copy(
+                startNode = currentEnd,
+                endNode = currentStart,
+                navigationSteps = emptyList(),
+                routeStats = null,
+                currentStepIndex = 0
+            )
+        }
+        if(currentStart != null && currentEnd != null){
+            calculateRoute()
+        }
     }
 
-    fun calculateRoute() {
+    private fun calculateRoute() {
         val start = uiState.value.startNode ?: return
         val end = uiState.value.endNode ?: return
 

@@ -12,6 +12,7 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -19,9 +20,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -30,6 +33,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
@@ -42,6 +46,7 @@ import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.TripOrigin
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -50,12 +55,14 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -94,6 +101,9 @@ import com.oriooneee.jet.navigation.TextLabel
 import com.oriooneee.jet.navigation.domain.entities.NavigationDirection
 import com.oriooneee.jet.navigation.domain.entities.NavigationStep
 import com.oriooneee.jet.navigation.domain.entities.graph.Node
+import com.oriooneee.jet.navigation.presentation.navigation.LocalNavController
+import com.oriooneee.jet.navigation.presentation.navigation.Route
+import kotlinx.coroutines.launch
 
 @Composable
 fun rememberZoomState(minScale: Float = 0.1f, maxScale: Float = 10f) =
@@ -157,15 +167,13 @@ class ZoomState(private val minScale: Float, private val maxScale: Float) {
     }
 }
 
+const val KEY_SELECTED_START_NODE = "selected_start_node"
+const val KEY_SELECTED_END_NODE = "selected_end_node"
+
 @OptIn(ExperimentalLayoutApi::class, ExperimentalAnimationApi::class)
 @Composable
 fun NavigationScreen(
-    startNode: Node?,
-    endNode: Node?,
-    onSelectStart: () -> Unit,
-    onSelectEnd: () -> Unit,
-    onSwapNodes: () -> Unit,
-    viewModel: NavigationViewModel = remember { NavigationViewModel() }
+    viewModel: NavigationViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -174,19 +182,40 @@ fun NavigationScreen(
     val routeColor = MaterialTheme.colorScheme.primary
     val startNodeColor = MaterialTheme.colorScheme.primary
     val endNodeColor = MaterialTheme.colorScheme.primary
+    val navController = LocalNavController.current
 
-    BoxWithConstraints {
-        val isLargeScreen = maxWidth >= 700.dp
-        var isPanelExpanded by remember { mutableStateOf(true) }
-
-        LaunchedEffect(startNode, endNode) {
-            viewModel.onStartNodeSelected(startNode)
-            viewModel.onEndNodeSelected(endNode)
-            if (startNode != null && endNode != null && startNode != endNode) {
-                viewModel.calculateRoute()
+    LaunchedEffect(Unit) {
+        navController.currentBackStackEntryFlow.collect {
+            val savedStateHandle = it.savedStateHandle
+            launch {
+                savedStateHandle.getStateFlow<Node?>(
+                    KEY_SELECTED_START_NODE,
+                    null
+                ).collect { node ->
+                    if (node != null) {
+                        viewModel.onStartNodeSelected(node)
+                        it.savedStateHandle.remove<Node>(KEY_SELECTED_START_NODE)
+                    }
+                }
+            }
+            launch {
+                savedStateHandle.getStateFlow<Node?>(
+                    KEY_SELECTED_END_NODE,
+                    null
+                ).collect { node ->
+                    if (node != null) {
+                        viewModel.onEndNodeSelected(node)
+                        it.savedStateHandle.remove<Node>(KEY_SELECTED_END_NODE)
+                    }
+                }
             }
         }
+    }
 
+
+    BoxWithConstraints {
+        val isLargeScreen = maxWidth >= 650.dp
+        var isPanelExpanded by remember { mutableStateOf(true) }
         LaunchedEffect(uiState.navigationSteps) {
             if (!isLargeScreen && uiState.navigationSteps.isNotEmpty()) {
                 isPanelExpanded = false
@@ -322,19 +351,22 @@ fun NavigationScreen(
                                 )
                             }
                         }
-
                         NavigationControls(
                             currentStepIndex = uiState.currentStepIndex,
                             totalSteps = uiState.navigationSteps.size,
                             routeStats = uiState.routeStats,
                             onPrevious = viewModel::previousStep,
                             onNext = viewModel::nextStep,
-                            startNode = startNode,
-                            endNode = endNode,
+                            startNode = uiState.startNode,
+                            endNode = uiState.endNode,
                             isLoading = uiState.isLoading,
-                            onSelectStart = onSelectStart,
-                            onSelectEnd = onSelectEnd,
-                            onSwapNodes = onSwapNodes,
+                            onSelectStart = {
+                                navController.navigate(Route.SelectDestination(isStartNode = true))
+                            },
+                            onSelectEnd = {
+                                navController.navigate(Route.SelectDestination(isStartNode = false))
+                            },
+                            onSwapNodes = viewModel::swapNodes,
                             isExpanded = isLargeScreen || isPanelExpanded,
                             isVertical = !isLargeScreen
                         )
@@ -355,85 +387,162 @@ fun DestinationInputPanel(
     onSwap: () -> Unit
 ) {
     Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.padding(horizontal = 16.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.padding(top = 18.dp, bottom = 18.dp, end = 12.dp)
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            color = MaterialTheme.colorScheme.surface,
+            tonalElevation = 1.dp,
+            shadowElevation = 2.dp
+        ) {
+            Row(
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    Icons.Default.MyLocation,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(16.dp)
-                )
-                Canvas(
+                // Левая часть с точками и линией
+                Box(
                     modifier = Modifier
-                        .width(2.dp)
-                        .height(24.dp)
-                        .padding(vertical = 4.dp)
+                        .width(32.dp)
+                        .height(96.dp)
                 ) {
-                    drawLine(
-                        color = Color.Gray.copy(alpha = 0.5f),
-                        start = Offset(center.x, 0f),
-                        end = Offset(center.x, size.height),
-                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f),
-                        strokeWidth = 4f
+                    // Вертикальная линия
+                    Box(
+                        modifier = Modifier
+                            .width(2.dp)
+                            .height(64.dp)
+                            .align(Alignment.Center)
+                            .background(
+                                MaterialTheme.colorScheme.outlineVariant,
+                                RoundedCornerShape(1.dp)
+                            )
+                    )
+
+                    // Верхняя точка (начало)
+                    Box(
+                        modifier = Modifier
+                            .size(12.dp)
+                            .align(Alignment.TopCenter)
+                            .background(
+                                MaterialTheme.colorScheme.primary,
+                                CircleShape
+                            )
+                            .border(
+                                3.dp,
+                                MaterialTheme.colorScheme.primaryContainer,
+                                CircleShape
+                            )
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .size(12.dp)
+                            .align(Alignment.BottomCenter)
+                            .background(
+                                MaterialTheme.colorScheme.error,
+                                CircleShape
+                            )
+                            .border(
+                                3.dp,
+                                MaterialTheme.colorScheme.errorContainer,
+                                CircleShape
+                            )
                     )
                 }
-                Icon(
-                    Icons.Default.LocationOn,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.size(16.dp)
-                )
-            }
 
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                LocationInputRow(
-                    label = "Start",
-                    value = startNode?.label ?: "Start",
-                    isEmpty = startNode == null,
-                    onClick = onSelectStart
-                )
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                LocationInputRow(
-                    label = "End",
-                    value = endNode?.label ?: "Destination",
-                    isEmpty = endNode == null,
-                    onClick = onSelectEnd
-                )
-            }
+                Spacer(modifier = Modifier.width(16.dp))
 
-            IconButton(
-                onClick = onSwap,
-                modifier = Modifier.padding(start = 8.dp)
-            ) {
-                Icon(
-                    Icons.Default.SwapVert,
-                    contentDescription = "Swap",
-                    tint = MaterialTheme.colorScheme.primary
-                )
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        onClick = onSelectStart,
+                        shape = RoundedCornerShape(12.dp),
+                        color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.5f)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = startNode?.label ?: "Start",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = if (startNode == null)
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                else
+                                    MaterialTheme.colorScheme.onSurface,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        onClick = onSelectEnd,
+                        shape = RoundedCornerShape(12.dp),
+                        color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.5f)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = endNode?.label ?: "Destination",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = if (endNode == null)
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                else
+                                    MaterialTheme.colorScheme.onSurface,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                Surface(
+                    modifier = Modifier
+                        .size(48.dp),
+                    onClick = onSwap,
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.primaryContainer
+                ) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        Icon(
+                            Icons.Default.SwapVert,
+                            contentDescription = "Поменять местами",
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                }
             }
         }
 
         if (isLoading) {
-            Row(
+            LinearProgressIndicator(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 4.dp),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
-                Spacer(Modifier.width(8.dp))
-                Text("Calculating route...", style = MaterialTheme.typography.bodySmall)
-            }
+                    .height(3.dp)
+                    .clip(RoundedCornerShape(1.5.dp)),
+                color = MaterialTheme.colorScheme.primary,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant
+            )
         }
     }
 }
