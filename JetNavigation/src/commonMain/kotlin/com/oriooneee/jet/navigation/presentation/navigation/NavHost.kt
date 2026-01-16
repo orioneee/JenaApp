@@ -54,7 +54,6 @@ fun NavigationApp() {
     var startNode by remember { mutableStateOf<Node?>(null) }
     var endNode by remember { mutableStateOf<Node?>(null) }
     MaterialTheme(
-        darkColorScheme()
     ) {
         CompositionLocalProvider(LocalBackStack provides backStack) {
             NavDisplay(

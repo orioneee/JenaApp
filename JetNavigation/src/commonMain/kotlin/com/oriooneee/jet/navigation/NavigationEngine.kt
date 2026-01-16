@@ -1,7 +1,6 @@
 package com.oriooneee.jet.navigation
 
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import com.oriooneee.jet.navigation.domain.entities.NavigationDirection
 import com.oriooneee.jet.navigation.domain.entities.NavigationStep
 import com.oriooneee.jet.navigation.domain.entities.graph.Node
@@ -10,7 +9,6 @@ import com.oriooneee.jet.navigation.domain.entities.plan.Flor
 import com.oriooneee.jet.navigation.domain.entities.plan.UniversityPlan
 import kotlinx.serialization.Serializable
 import kotlin.math.abs
-import kotlin.math.max
 import kotlin.math.roundToInt
 
 @Serializable
@@ -18,7 +16,6 @@ data class TextLabel(
     val text: String,
     val x: Float,
     val y: Float,
-    val fontSize: Float,
     val color: String = "#000000",
     val bold: Boolean = false,
     val hasBackground: Boolean = false
@@ -311,10 +308,7 @@ class NavigationEngine(
             }
         }
 
-        val strokeBase = max(1.0, outputHeight * 0.001)
         val textLabels = mutableListOf<TextLabel>()
-
-        val boundaryMargin = drawWidth * 0.05
 
         flor.texts.forEach { txt ->
             var clean = txt.text
@@ -332,25 +326,11 @@ class NavigationEngine(
                 val cx = tx(txt.x)
                 val cy = ty(txt.y)
 
-                val isNearEdge = cx < boundaryMargin || cx > (drawWidth - boundaryMargin) ||
-                        cy < boundaryMargin || cy > (outputHeight - boundaryMargin)
-
-                val baseSize = (strokeBase * 6).toFloat()
-                var finalSize = baseSize
-
-                if (clean.length > 7 || isNearEdge) {
-                    finalSize = baseSize * 0.7f
-                }
-                if (isNearEdge && clean.length > 7) {
-                    finalSize = baseSize * 0.5f
-                }
-
                 textLabels.add(
                     TextLabel(
                         text = clean,
                         x = cx,
                         y = cy,
-                        fontSize = finalSize,
                         color = "#666666"
                     )
                 )
@@ -368,13 +348,6 @@ class NavigationEngine(
             endNode = endNodeOffset,
             textLabels = textLabels
         )
-    }
-
-    private fun Double.round(decimals: Int): String {
-        var multiplier = 1.0
-        repeat(decimals) { multiplier *= 10 }
-        val rounded = (this * multiplier).roundToInt() / multiplier
-        return rounded.toString()
     }
 }
 

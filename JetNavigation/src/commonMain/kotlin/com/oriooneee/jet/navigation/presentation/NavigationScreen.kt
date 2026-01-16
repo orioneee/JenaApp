@@ -1,16 +1,14 @@
 package com.oriooneee.jet.navigation.presentation
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.expandVertically
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -21,6 +19,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -31,13 +30,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowUpward
@@ -75,6 +69,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
@@ -91,9 +86,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.oriooneee.jet.navigation.FloorRenderData
+import com.oriooneee.jet.navigation.TextLabel
 import com.oriooneee.jet.navigation.domain.entities.NavigationDirection
 import com.oriooneee.jet.navigation.domain.entities.NavigationStep
 import com.oriooneee.jet.navigation.domain.entities.graph.Node
@@ -160,15 +157,6 @@ class ZoomState(private val minScale: Float, private val maxScale: Float) {
     }
 }
 
-fun parseColor(hex: String): Color {
-    val cleanHex = hex.removePrefix("#")
-    val color = cleanHex.toLongOrNull(16) ?: 0x000000
-    val r = ((color shr 16) and 0xFF) / 255f
-    val g = ((color shr 8) and 0xFF) / 255f
-    val b = (color and 0xFF) / 255f
-    return Color(r, g, b)
-}
-
 @OptIn(ExperimentalLayoutApi::class, ExperimentalAnimationApi::class)
 @Composable
 fun NavigationScreen(
@@ -186,10 +174,9 @@ fun NavigationScreen(
     val routeColor = MaterialTheme.colorScheme.primary
     val startNodeColor = MaterialTheme.colorScheme.primary
     val endNodeColor = MaterialTheme.colorScheme.primary
+
     BoxWithConstraints {
-
         val isLargeScreen = maxWidth >= 700.dp
-
         var isPanelExpanded by remember { mutableStateOf(true) }
 
         LaunchedEffect(startNode, endNode) {
@@ -206,7 +193,7 @@ fun NavigationScreen(
             }
         }
 
-        Scaffold {
+        Scaffold { paddingValues ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -235,10 +222,8 @@ fun NavigationScreen(
                             AnimatedContent(
                                 targetState = uiState.currentStep!!,
                                 transitionSpec = {
-                                    fadeIn(androidx.compose.animation.core.tween(400)) + scaleIn(
-                                        initialScale = 0.95f
-                                    ) togetherWith
-                                            fadeOut(androidx.compose.animation.core.tween(400))
+                                    fadeIn(tween(400)) + scaleIn(initialScale = 0.95f) togetherWith
+                                            fadeOut(tween(400))
                                 },
                                 label = "MapAnim"
                             ) { step ->
@@ -311,12 +296,16 @@ fun NavigationScreen(
                     tonalElevation = 4.dp
                 ) {
                     Column(
-                        modifier = Modifier.animateContentSize(
-                            animationSpec = spring(
-                                dampingRatio = Spring.DampingRatioLowBouncy,
-                                stiffness = Spring.StiffnessMedium
+                        modifier = Modifier
+                            .animateContentSize(
+                                animationSpec = spring(
+                                    dampingRatio = Spring.DampingRatioLowBouncy,
+                                    stiffness = Spring.StiffnessMedium
+                                )
                             )
-                        )
+                            .navigationBarsPadding()
+                            .padding(bottom = 24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         if (!isLargeScreen) {
                             Box(
@@ -334,55 +323,21 @@ fun NavigationScreen(
                             }
                         }
 
-                        if (isLargeScreen || isPanelExpanded) {
-                            LazyVerticalGrid(
-                                columns = GridCells.Adaptive(minSize = 300.dp),
-                                modifier = Modifier
-                                    .navigationBarsPadding()
-                                    .padding(start = 24.dp, end = 24.dp, bottom = 24.dp)
-                                    .widthIn(max = 800.dp)
-                                    .align(Alignment.CenterHorizontally),
-                                verticalArrangement = Arrangement.spacedBy(16.dp),
-                                horizontalArrangement = Arrangement.spacedBy(
-                                    16.dp,
-                                    Alignment.CenterHorizontally
-                                )
-                            ) {
-                                item (
-                                    span = { GridItemSpan(maxLineSpan) }
-                                ){
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                }
-                                item {
-                                    DestinationInputPanel(
-                                        startNode = startNode,
-                                        endNode = endNode,
-                                        isLoading = uiState.isLoading,
-                                        onSelectStart = onSelectStart,
-                                        onSelectEnd = onSelectEnd,
-                                        onSwap = onSwapNodes
-                                    )
-                                }
-
-                                item {
-                                    this@Column.AnimatedVisibility(
-                                        visible = uiState.navigationSteps.isNotEmpty() && !uiState.isLoading,
-                                        enter = expandVertically() + fadeIn(),
-                                        exit = shrinkVertically() + fadeOut()
-                                    ) {
-                                        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                                            NavigationControls(
-                                                currentStepIndex = uiState.currentStepIndex,
-                                                totalSteps = uiState.navigationSteps.size,
-                                                routeStats = uiState.routeStats,
-                                                onPrevious = viewModel::previousStep,
-                                                onNext = viewModel::nextStep
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        NavigationControls(
+                            currentStepIndex = uiState.currentStepIndex,
+                            totalSteps = uiState.navigationSteps.size,
+                            routeStats = uiState.routeStats,
+                            onPrevious = viewModel::previousStep,
+                            onNext = viewModel::nextStep,
+                            startNode = startNode,
+                            endNode = endNode,
+                            isLoading = uiState.isLoading,
+                            onSelectStart = onSelectStart,
+                            onSelectEnd = onSelectEnd,
+                            onSwapNodes = onSwapNodes,
+                            isExpanded = isLargeScreen || isPanelExpanded,
+                            isVertical = !isLargeScreen
+                        )
                     }
                 }
             }
@@ -399,7 +354,10 @@ fun DestinationInputPanel(
     onSelectEnd: () -> Unit,
     onSwap: () -> Unit
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.padding(horizontal = 16.dp)
+    ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -411,7 +369,12 @@ fun DestinationInputPanel(
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(16.dp)
                 )
-                Canvas(modifier = Modifier.width(2.dp).height(24.dp).padding(vertical = 4.dp)) {
+                Canvas(
+                    modifier = Modifier
+                        .width(2.dp)
+                        .height(24.dp)
+                        .padding(vertical = 4.dp)
+                ) {
                     drawLine(
                         color = Color.Gray.copy(alpha = 0.5f),
                         start = Offset(center.x, 0f),
@@ -461,7 +424,9 @@ fun DestinationInputPanel(
 
         if (isLoading) {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 4.dp),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -522,14 +487,24 @@ fun NavigationControls(
     currentStepIndex: Int,
     totalSteps: Int,
     routeStats: NavigationDirection?,
+    isExpanded: Boolean,
     onPrevious: () -> Unit,
-    onNext: () -> Unit
+    onNext: () -> Unit,
+    startNode: Node?,
+    endNode: Node?,
+    isLoading: Boolean,
+    onSelectStart: () -> Unit,
+    onSelectEnd: () -> Unit,
+    onSwapNodes: () -> Unit,
+    isVertical: Boolean
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    @Composable
+    fun RouteStats() {
         routeStats?.let { stats ->
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
                     .background(
                         MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
                         RoundedCornerShape(12.dp)
@@ -556,9 +531,14 @@ fun NavigationControls(
                 Icon(Icons.Default.Timer, null, tint = MaterialTheme.colorScheme.primary)
             }
         }
+    }
 
+    @Composable
+    fun StepNavigationControls() {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -569,13 +549,19 @@ fun NavigationControls(
                     containerColor = MaterialTheme.colorScheme.secondaryContainer,
                     contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                 ),
-                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp)
+                contentPadding = PaddingValues(horizontal = 12.dp)
             ) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowForward,
+                    null,
+                    modifier = Modifier.rotate(180f)
+                )
+                Spacer(Modifier.width(8.dp))
+                Text("Previous")
             }
 
             Text(
-                text = "Step ${currentStepIndex + 1} of $totalSteps",
+                text = "${currentStepIndex + 1} / $totalSteps",
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium
             )
@@ -583,7 +569,7 @@ fun NavigationControls(
             Button(
                 onClick = onNext,
                 enabled = currentStepIndex < totalSteps - 1,
-                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 24.dp)
+                contentPadding = PaddingValues(horizontal = 24.dp)
             ) {
                 Text("Next")
                 Spacer(Modifier.width(8.dp))
@@ -591,7 +577,66 @@ fun NavigationControls(
             }
         }
     }
+
+    if (isVertical) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            if (isExpanded) {
+                DestinationInputPanel(
+                    startNode = startNode,
+                    endNode = endNode,
+                    isLoading = isLoading,
+                    onSelectStart = onSelectStart,
+                    onSelectEnd = onSelectEnd,
+                    onSwap = onSwapNodes
+                )
+                RouteStats()
+            }
+            if (totalSteps > 0) {
+                StepNavigationControls()
+            }
+        }
+    } else {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(modifier = Modifier.weight(1f)) {
+                if (isExpanded) {
+                    DestinationInputPanel(
+                        startNode = startNode,
+                        endNode = endNode,
+                        isLoading = isLoading,
+                        onSelectStart = onSelectStart,
+                        onSelectEnd = onSelectEnd,
+                        onSwap = onSwapNodes
+                    )
+                }
+            }
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                if (isExpanded) {
+                    RouteStats()
+                }
+                if (totalSteps > 0) {
+                    StepNavigationControls()
+                }
+            }
+        }
+    }
 }
+
+data class RenderedLabel(
+    val label: TextLabel,
+    val fontSize: TextUnit,
+    val visible: Boolean
+)
 
 @Composable
 fun ZoomableMapCanvas(
@@ -606,9 +651,67 @@ fun ZoomableMapCanvas(
     val zoomState = rememberZoomState()
     val textMeasurer = rememberTextMeasurer()
     val contentSize = remember(renderData) { Size(renderData.width, renderData.height) }
+    val density = LocalDensity.current
+
+    val renderedLabels = remember(renderData, density) {
+        val linesForCollision = mutableListOf<Pair<Offset, Offset>>()
+        renderData.polylines.forEach { poly ->
+            for (i in 0 until poly.size - 1) {
+                linesForCollision.add(poly[i] to poly[i + 1])
+            }
+        }
+        renderData.polygons.forEach { poly ->
+            for (i in 0 until poly.size - 1) {
+                linesForCollision.add(poly[i] to poly[i + 1])
+            }
+            if (poly.isNotEmpty()) linesForCollision.add(poly.last() to poly.first())
+        }
+        linesForCollision.addAll(renderData.singleLines)
+
+        renderData.textLabels.map { label ->
+            val maxFontSize = 40.sp
+            val minFontSize = 6.sp
+            var currentSize = maxFontSize
+            var finalSize = minFontSize
+            var isVisible = false
+            val steps = 10
+
+            for (i in 0..steps) {
+                val scaleFactor = 1f - (i * 0.1f)
+                val testSize = currentSize * scaleFactor
+
+                if (testSize < minFontSize) break
+
+                val textStyle = TextStyle(
+                    fontSize = testSize,
+                    fontWeight = if (label.bold) FontWeight.Bold else FontWeight.Normal
+                )
+                val layoutResult = textMeasurer.measure(label.text, textStyle)
+                val width = layoutResult.size.width
+                val height = layoutResult.size.height
+                val left = label.x - width / 2f
+                val top = label.y - height / 2f
+                val rect = Rect(left, top, left + width, top + height)
+
+                var hasCollision = false
+                for (line in linesForCollision) {
+                    if (rectIntersectsLine(rect, line.first, line.second)) {
+                        hasCollision = true
+                        break
+                    }
+                }
+
+                if (!hasCollision) {
+                    finalSize = testSize
+                    isVisible = true
+                    break
+                }
+            }
+            RenderedLabel(label, if (isVisible) finalSize else minFontSize, isVisible)
+        }
+    }
 
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-        val density = LocalDensity.current
         val containerSize = Size(
             with(density) { maxWidth.toPx() },
             with(density) { maxHeight.toPx() }
@@ -720,44 +823,47 @@ fun ZoomableMapCanvas(
                     drawCircle(color = endNodeColor, radius = strokeWidth * 3f, center = it)
                 }
 
-                renderData.textLabels.forEach { label ->
-                    val textColor = if (label.color == "#000000") Color.Black else labelColor
+                renderedLabels.forEach { rendered ->
+                    if (rendered.visible) {
+                        val label = rendered.label
+                        val textColor = if (label.color == "#000000") Color.Black else labelColor
 
-                    val textStyle = TextStyle(
-                        color = textColor,
-                        fontSize = label.fontSize.sp,
-                        fontWeight = if (label.bold) FontWeight.Bold else FontWeight.Normal
-                    )
+                        val textStyle = TextStyle(
+                            color = textColor,
+                            fontSize = rendered.fontSize,
+                            fontWeight = if (label.bold) FontWeight.Bold else FontWeight.Normal
+                        )
 
-                    val measuredText = textMeasurer.measure(
-                        text = label.text,
-                        style = textStyle
-                    )
+                        val measuredText = textMeasurer.measure(
+                            text = label.text,
+                            style = textStyle
+                        )
 
-                    val textWidth = measuredText.size.width.toFloat()
-                    val textHeight = measuredText.size.height.toFloat()
-                    val centeredX = label.x - (textWidth / 2f)
-                    val centeredY = label.y - (textHeight / 2f)
+                        val textWidth = measuredText.size.width.toFloat()
+                        val textHeight = measuredText.size.height.toFloat()
+                        val centeredX = label.x - (textWidth / 2f)
+                        val centeredY = label.y - (textHeight / 2f)
 
-                    if (label.hasBackground) {
-                        val padding = label.fontSize * 0.3f
-                        val rectLeft = centeredX - padding
-                        val rectTop = centeredY - padding
-                        val rectRight = centeredX + textWidth + padding
-                        val rectBottom = centeredY + textHeight + padding
+                        if (label.hasBackground) {
+                            val padding = rendered.fontSize.toPx() * 0.3f
+                            val rectLeft = centeredX - padding
+                            val rectTop = centeredY - padding
+                            val rectRight = centeredX + textWidth + padding
+                            val rectBottom = centeredY + textHeight + padding
 
-                        drawRoundRect(
-                            color = Color.White.copy(alpha = 0.9f),
-                            topLeft = Offset(rectLeft, rectTop),
-                            size = Size(rectRight - rectLeft, rectBottom - rectTop),
-                            cornerRadius = CornerRadius(padding / 2f)
+                            drawRoundRect(
+                                color = Color.White.copy(alpha = 0.9f),
+                                topLeft = Offset(rectLeft, rectTop),
+                                size = Size(rectRight - rectLeft, rectBottom - rectTop),
+                                cornerRadius = CornerRadius(padding / 2f)
+                            )
+                        }
+
+                        drawText(
+                            textLayoutResult = measuredText,
+                            topLeft = Offset(centeredX, centeredY)
                         )
                     }
-
-                    drawText(
-                        textLayoutResult = measuredText,
-                        topLeft = Offset(centeredX, centeredY)
-                    )
                 }
             }
         }
@@ -782,6 +888,33 @@ fun ZoomableMapCanvas(
             }
         }
     }
+}
+
+private fun rectIntersectsLine(rect: Rect, p1: Offset, p2: Offset): Boolean {
+    if (rect.contains(p1) || rect.contains(p2)) return true
+    if ((p1.x < rect.left && p2.x < rect.left) ||
+        (p1.x > rect.right && p2.x > rect.right) ||
+        (p1.y < rect.top && p2.y < rect.top) ||
+        (p1.y > rect.bottom && p2.y > rect.bottom)
+    ) return false
+
+    val left = Offset(rect.left, rect.top)
+    val bottom = Offset(rect.left, rect.bottom)
+    val right = Offset(rect.right, rect.bottom)
+    val top = Offset(rect.right, rect.top)
+
+    return lineIntersectsLine(p1, p2, left, bottom) ||
+            lineIntersectsLine(p1, p2, bottom, right) ||
+            lineIntersectsLine(p1, p2, right, top) ||
+            lineIntersectsLine(p1, p2, top, left)
+}
+
+private fun lineIntersectsLine(a1: Offset, a2: Offset, b1: Offset, b2: Offset): Boolean {
+    val d = (b2.y - b1.y) * (a2.x - a1.x) - (b2.x - b1.x) * (a2.y - a1.y)
+    if (d == 0f) return false
+    val uA = ((b2.x - b1.x) * (a1.y - b1.y) - (b2.y - b1.y) * (a1.x - b1.x)) / d
+    val uB = ((a2.x - a1.x) * (a1.y - b1.y) - (a2.y - a1.y) * (a1.x - b1.x)) / d
+    return uA in 0f..1f && uB in 0f..1f
 }
 
 @Composable
