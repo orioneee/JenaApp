@@ -7,6 +7,7 @@ import com.oriooneee.jet.navigation.domain.entities.graph.Node
 import com.oriooneee.jet.navigation.domain.entities.graph.SelectNodeResult
 import com.oriooneee.jet.navigation.domain.entities.graph.Flor
 import com.oriooneee.jet.navigation.domain.entities.graph.MasterNavigation
+import com.oriooneee.jet.navigation.domain.entities.graph.NodeType
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -46,22 +47,14 @@ class NavigationEngine(private val masterNav: MasterNavigation) {
             is SelectNodeResult.NearestManWC -> {
                 if (referenceNode == null) return null
                 findNearestNode(referenceNode) {
-                    it.id.contains("WC", ignoreCase = true) &&
-                            (it.id.contains("MAN", ignoreCase = true) || it.id.contains(
-                                "_M_",
-                                ignoreCase = true
-                            ))
+                    it.type.contains(NodeType.WC_MAN)
                 }
             }
 
             is SelectNodeResult.NearestWomanWC -> {
                 if (referenceNode == null) return null
                 findNearestNode(referenceNode) {
-                    it.id.contains("WC", ignoreCase = true) &&
-                            (it.id.contains("WOMAN", ignoreCase = true) || it.id.contains(
-                                "_W_",
-                                ignoreCase = true
-                            ))
+                    it.type.contains(NodeType.WC_WOMAN)
                 }
             }
 

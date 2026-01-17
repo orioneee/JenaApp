@@ -74,6 +74,8 @@ import com.oriooneee.jet.navigation.domain.entities.graph.SelectNodeResult
 import com.oriooneee.jet.navigation.presentation.KEY_SELECTED_END_NODE
 import com.oriooneee.jet.navigation.presentation.KEY_SELECTED_START_NODE
 import com.oriooneee.jet.navigation.presentation.navigation.LocalNavController
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -170,18 +172,25 @@ fun SelectDestinationScreen(
             }.sortedWith(
                 compareBy<NodeInfo> { info ->
                     when {
-                        info.node.type.contains(NodeType.POINT_OF_INTEREST) -> 0
-                        info.node.type.contains(NodeType.MAIN_ENTRANCE) -> 1
-                        info.node.id.contains("WC", ignoreCase = true) -> 2
-                        info.node.type.contains(NodeType.AUDITORIUM) -> 3
-                        info.node.type.contains(NodeType.TRANSFER_TO_ANOTHER_BUILDING) -> 4
-                        else -> 5
+                        info.node.type.contains(NodeType.MAIN_ENTRANCE) -> 0
+                        info.node.type.contains(NodeType.WC_MAN) ||
+                                info.node.type.contains(NodeType.WC_WOMAN) ||
+                                info.node.id.contains("WC", ignoreCase = true) -> 1
+                        info.node.type.contains(NodeType.AUDITORIUM) -> 2
+                        info.node.type.contains(NodeType.POINT_OF_INTEREST) -> 3
+                        else -> 4
                     }
                 }.thenBy { info ->
-                    if (info.node.type.contains(NodeType.AUDITORIUM)) {
-                        info.node.id.filter { it.isDigit() }.toIntOrNull() ?: Int.MAX_VALUE
-                    } else {
-                        0
+                    when {
+                        info.node.type.contains(NodeType.WC_MAN) ||
+                                info.node.type.contains(NodeType.WC_WOMAN) ||
+                                info.node.id.contains("WC", ignoreCase = true) -> {
+                            info.floor
+                        }
+                        info.node.type.contains(NodeType.AUDITORIUM) -> {
+                            info.node.id.filter { it.isDigit() }.toIntOrNull() ?: Int.MAX_VALUE
+                        }
+                        else -> 0
                     }
                 }.thenBy { it.node.label }
             )
