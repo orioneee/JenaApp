@@ -876,7 +876,7 @@ fun ZoomableMapCanvas(
                         path = routePath,
                         color = routeColor.copy(alpha = 0.8f),
                         style = Stroke(
-                            width = strokeWidth * 4f,
+                            width = strokeWidth * 2f,
                             cap = StrokeCap.Round,
                             join = StrokeJoin.Round
                         )
@@ -896,7 +896,7 @@ fun ZoomableMapCanvas(
                 containerSize.height / contentSize.height
             ).takeIf { it > 0 } ?: 1f
 
-            val baseTextSizeScreenPx = with(density) { 4.dp.toPx() }
+            val baseTextSizeScreenPx = with(density) { 2.dp.toPx() }
             val baseTextSizeWorld = baseTextSizeScreenPx / fitScale
             val currentTextSizePx = baseTextSizeWorld * zoomState.scale
 
