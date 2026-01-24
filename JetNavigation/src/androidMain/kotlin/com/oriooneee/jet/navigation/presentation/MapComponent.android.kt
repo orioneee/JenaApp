@@ -26,8 +26,6 @@ import com.mapbox.maps.plugin.viewport.data.DefaultViewportTransitionOptions
 import com.mapbox.maps.plugin.viewport.data.OverviewViewportStateOptions
 import com.oriooneee.jet.navigation.buildconfig.BuildConfig
 import com.oriooneee.jet.navigation.domain.entities.NavigationStep
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 
 @Composable
@@ -106,7 +104,7 @@ actual fun MapComponent(
             )
         }
     ){
-        MapEffect {
+        MapEffect(step) {
             mapState.mapLoadedEvents.first()
             val geometry = LineString.fromLngLats(routePoints)
             val overviewOptions = OverviewViewportStateOptions.Builder()

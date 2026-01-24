@@ -74,7 +74,7 @@ class NavigationViewModel : ViewModel() {
     fun onStartNodeSelected(result: SelectNodeResult) {
         viewModelScope.launch(Dispatchers.Default) {
             val engine = navigationEngine.value ?: return@launch
-            val referenceNode = uiState.value.endInDoorNode
+            val referenceNode = uiState.value.endNode
             val resolvedNode = engine.resolveSelection(result, referenceNode)
 
             withContext(Dispatchers.Main) {
@@ -102,7 +102,7 @@ class NavigationViewModel : ViewModel() {
     fun onEndNodeSelected(result: SelectNodeResult) {
         viewModelScope.launch(Dispatchers.Default) {
             val engine = navigationEngine.value ?: return@launch
-            val referenceNode = uiState.value.startInDoorNode
+            val referenceNode = uiState.value.startNode
             val resolvedNode = engine.resolveSelection(result, referenceNode)
 
             withContext(Dispatchers.Main) {

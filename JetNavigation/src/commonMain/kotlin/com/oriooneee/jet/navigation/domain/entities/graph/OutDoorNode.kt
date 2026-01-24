@@ -15,7 +15,12 @@ data class OutDoorNode(
     val lon: Double,
     @SerialName("lat")
     val lat: Double,
+    @SerialName("buildNum")
+    private val _buildNum: String? = null,
 ) {
     val type: List<NodeType>
         get() = _type ?: if (id.contains("TURN")) listOf(NodeType.TURN) else emptyList()
+
+    val buildNum: Int?
+        get() = _buildNum?.toIntOrNull()
 }

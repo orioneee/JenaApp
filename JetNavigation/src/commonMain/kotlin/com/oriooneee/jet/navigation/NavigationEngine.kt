@@ -134,7 +134,7 @@ class NavigationEngine(private val masterNav: MasterNavigation) {
 
     fun resolveSelection(
         result: SelectNodeResult,
-        referenceNode: InDoorNode?
+        referenceNode: ResolvedNode?
     ): ResolvedNode? {
         return when (result) {
             is SelectNodeResult.SelectedNode -> ResolvedNode.InDoor(result.node)
@@ -365,6 +365,8 @@ class NavigationEngine(private val masterNav: MasterNavigation) {
 
         segments.forEachIndexed { i, segment ->
             val firstNode = segment.first()
+            val indoorNodes = segment.mapNotNull { (it as? ResolvedNode.InDoor)?.node }
+            val isSingleIndoorPoint = firstNode is ResolvedNode.InDoor && indoorNodes.size <= 1
 
             if (i > 0) {
                 val prevSegment = segments[i - 1]
@@ -373,7 +375,10 @@ class NavigationEngine(private val masterNav: MasterNavigation) {
                 if (prevLast is ResolvedNode.InDoor && firstNode is ResolvedNode.OutDoor) {
                     steps.add(NavigationStep.TransitionToOutDoor(fromBuilding = prevLast.node.buildNum))
                 } else if (prevLast is ResolvedNode.OutDoor && firstNode is ResolvedNode.InDoor) {
-                    steps.add(NavigationStep.TransitionToInDoor(toBuilding = firstNode.node.buildNum))
+                    val skipTransition = (i == segments.lastIndex && isSingleIndoorPoint)
+                    if (!skipTransition) {
+                        steps.add(NavigationStep.TransitionToInDoor(toBuilding = firstNode.node.buildNum))
+                    }
                 } else if (prevLast is ResolvedNode.InDoor && firstNode is ResolvedNode.InDoor) {
                     if (prevLast.node.buildNum != firstNode.node.buildNum) {
                         steps.add(NavigationStep.TransitionToBuilding(
@@ -390,13 +395,16 @@ class NavigationEngine(private val masterNav: MasterNavigation) {
             }
 
             if (firstNode is ResolvedNode.InDoor) {
-                val indoorNodes = segment.mapNotNull { (it as? ResolvedNode.InDoor)?.node }
+                val isStartSegment = i == 0
+                val isEndSegment = i == segments.lastIndex
 
-                val isTrivial = indoorNodes.size < 2
-                val hasNextSegment = i < segments.lastIndex
-                val nextIsOutdoor = hasNextSegment && segments[i + 1].first() is ResolvedNode.OutDoor
+                val nextIsOutdoor = (i + 1 < segments.size) && (segments[i + 1].first() is ResolvedNode.OutDoor)
+                val prevIsOutdoor = (i - 1 >= 0) && (segments[i - 1].last() is ResolvedNode.OutDoor)
 
-                if (!isTrivial || !nextIsOutdoor) {
+                val skipStart = isStartSegment && isSingleIndoorPoint && nextIsOutdoor
+                val skipEnd = isEndSegment && isSingleIndoorPoint && prevIsOutdoor
+
+                if (!skipStart && !skipEnd) {
                     val buildingId = firstNode.node.buildNum
                     val floorNum = firstNode.node.floorNum
 
@@ -420,8 +428,7 @@ class NavigationEngine(private val masterNav: MasterNavigation) {
                             localEnd = endNodeForRender
                         )
 
-                        val focusPoint =
-                            renderData.startNode ?: renderData.routePath.firstOrNull() ?: Offset.Zero
+                        val focusPoint = renderData.startNode ?: renderData.routePath.firstOrNull() ?: Offset.Zero
 
                         steps.add(
                             NavigationStep.ByFlor(
