@@ -47,6 +47,8 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.WbSunny
+import androidx.compose.material.icons.outlined.Park
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -99,6 +101,7 @@ import com.oriooneee.jet.navigation.FloorRenderData
 import com.oriooneee.jet.navigation.TextLabel
 import com.oriooneee.jet.navigation.domain.entities.NavigationDirection
 import com.oriooneee.jet.navigation.domain.entities.NavigationStep
+import com.oriooneee.jet.navigation.ResolvedNode
 import com.oriooneee.jet.navigation.domain.entities.graph.InDoorNode
 import com.oriooneee.jet.navigation.presentation.navigation.LocalNavController
 import com.oriooneee.jet.navigation.presentation.navigation.Route
@@ -309,6 +312,42 @@ fun NavigationScreen(
                                             toBuilding = step.to
                                         )
                                     }
+
+                                    is NavigationStep.OutDoorMaps -> {
+                                        // TODO: Implement outdoor map view with coordinates
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .background(Color(0xFF81C784).copy(alpha = 0.2f)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                                Icon(
+                                                    Icons.Outlined.Park,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(80.dp),
+                                                    tint = Color(0xFF4CAF50)
+                                                )
+                                                Spacer(Modifier.height(16.dp))
+                                                Text(
+                                                    "Outdoor Navigation",
+                                                    style = MaterialTheme.typography.headlineMedium,
+                                                    color = Color(0xFF2E7D32)
+                                                )
+                                                Text(
+                                                    "${step.path.size} waypoints",
+                                                    style = MaterialTheme.typography.bodyLarge,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                )
+                                            }
+                                        }
+                                    }
+                                    is NavigationStep.TransitionToInDoor -> {
+                                        TransitionToInDoorScreen(toBuilding = step.toBuilding)
+                                    }
+                                    is NavigationStep.TransitionToOutDoor -> {
+                                        TransitionToOutDoorScreen(fromBuilding = step.fromBuilding)
+                                    }
                                 }
                             }
                         } else {
@@ -414,8 +453,8 @@ fun NavigationScreen(
 
 @Composable
 fun DestinationInputPanel(
-    startNode: InDoorNode?,
-    endNode: InDoorNode?,
+    startNode: ResolvedNode?,
+    endNode: ResolvedNode?,
     isLoading: Boolean,
     onSelectStart: () -> Unit,
     onSelectEnd: () -> Unit,
@@ -634,8 +673,8 @@ fun NavigationControls(
     isExpanded: Boolean,
     onPrevious: () -> Unit,
     onNext: () -> Unit,
-    startNode: InDoorNode?,
-    endNode: InDoorNode?,
+    startNode: ResolvedNode?,
+    endNode: ResolvedNode?,
     isLoading: Boolean,
     onSelectStart: () -> Unit,
     onSelectEnd: () -> Unit,
@@ -1318,5 +1357,238 @@ fun TransitionToBuildingScreen(
         )
 
         Spacer(Modifier.height(16.dp))
+    }
+}
+
+@Composable
+fun TransitionToOutDoorScreen(fromBuilding: Int) {
+    val outdoorColor = Color(0xFF4CAF50)
+    val lineColor = MaterialTheme.colorScheme.primary
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                androidx.compose.ui.graphics.Brush.verticalGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.surfaceContainerHigh,
+                        outdoorColor.copy(alpha = 0.1f)
+                    )
+                )
+            )
+            .padding(32.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(
+                    imageVector = Icons.Default.LocationCity,
+                    contentDescription = null,
+                    modifier = Modifier.size(64.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Building $fromBuilding",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(horizontal = 24.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.DirectionsWalk,
+                    contentDescription = null,
+                    modifier = Modifier.size(32.dp),
+                    tint = lineColor
+                )
+                Canvas(modifier = Modifier.width(40.dp).height(2.dp)) {
+                    val pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+                    drawLine(
+                        color = lineColor,
+                        start = Offset(0f, 0f),
+                        end = Offset(size.width, 0f),
+                        pathEffect = pathEffect,
+                        strokeWidth = 4.dp.toPx(),
+                        cap = StrokeCap.Round
+                    )
+                }
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp).padding(top = 4.dp),
+                    tint = lineColor
+                )
+            }
+
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(
+                    imageVector = Icons.Outlined.Park,
+                    contentDescription = null,
+                    modifier = Modifier.size(80.dp),
+                    tint = outdoorColor
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Outside",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = outdoorColor
+                )
+            }
+        }
+
+        Spacer(Modifier.height(48.dp))
+
+        Icon(
+            imageVector = Icons.Default.WbSunny,
+            contentDescription = null,
+            modifier = Modifier.size(48.dp),
+            tint = Color(0xFFFFB300)
+        )
+
+        Spacer(Modifier.height(16.dp))
+
+        Text(
+            text = "Exit the Building",
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+            color = outdoorColor
+        )
+
+        Spacer(Modifier.height(8.dp))
+
+        Text(
+            text = "Continue your route outdoors",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+@Composable
+fun TransitionToInDoorScreen(toBuilding: Int) {
+    val buildingColor = MaterialTheme.colorScheme.primary
+    val outdoorColor = Color(0xFF4CAF50)
+    val lineColor = MaterialTheme.colorScheme.primary
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                androidx.compose.ui.graphics.Brush.verticalGradient(
+                    colors = listOf(
+                        outdoorColor.copy(alpha = 0.1f),
+                        MaterialTheme.colorScheme.surfaceContainerHigh
+                    )
+                )
+            )
+            .padding(32.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(
+                    imageVector = Icons.Outlined.Park,
+                    contentDescription = null,
+                    modifier = Modifier.size(64.dp),
+                    tint = outdoorColor
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Outside",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = outdoorColor
+                )
+            }
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(horizontal = 24.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.DirectionsWalk,
+                    contentDescription = null,
+                    modifier = Modifier.size(32.dp),
+                    tint = lineColor
+                )
+                Canvas(modifier = Modifier.width(40.dp).height(2.dp)) {
+                    val pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+                    drawLine(
+                        color = lineColor,
+                        start = Offset(0f, 0f),
+                        end = Offset(size.width, 0f),
+                        pathEffect = pathEffect,
+                        strokeWidth = 4.dp.toPx(),
+                        cap = StrokeCap.Round
+                    )
+                }
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp).padding(top = 4.dp),
+                    tint = lineColor
+                )
+            }
+
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(
+                    imageVector = Icons.Default.LocationCity,
+                    contentDescription = null,
+                    modifier = Modifier.size(80.dp),
+                    tint = buildingColor
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Building $toBuilding",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = buildingColor
+                )
+            }
+        }
+
+        Spacer(Modifier.height(48.dp))
+
+        Icon(
+            imageVector = Icons.Default.LocationCity,
+            contentDescription = null,
+            modifier = Modifier.size(48.dp),
+            tint = buildingColor
+        )
+
+        Spacer(Modifier.height(16.dp))
+
+        Text(
+            text = "Enter Building $toBuilding",
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+            color = buildingColor
+        )
+
+        Spacer(Modifier.height(8.dp))
+
+        Text(
+            text = "Continue your route inside",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center
+        )
     }
 }

@@ -38,10 +38,12 @@ data class MasterNavigation(
             return Json.decodeFromString<MasterNavigation>(jsonString).also {
                 val audsCount = it.inDoorNavGraph.nodes
                     .count { node -> node.type.contains(NodeType.AUDITORIUM) }
+                val outDoorEdgesCount = it.outDoorNavGraph.edges.size
 
                 println(
                     "Loaded MasterNavigation with " +
-                            "${it.buildings.size} buildings and $audsCount auditoriums"
+                            "${it.buildings.size} buildings and $audsCount auditoriums " +
+                            "and $outDoorEdgesCount outdoor edges."
                 )
             }
         }

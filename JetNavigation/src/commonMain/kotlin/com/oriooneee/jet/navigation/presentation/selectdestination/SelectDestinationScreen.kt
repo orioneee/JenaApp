@@ -31,6 +31,7 @@ import androidx.compose.material.icons.outlined.Class
 import androidx.compose.material.icons.outlined.DirectionsWalk
 import androidx.compose.material.icons.outlined.ExitToApp
 import androidx.compose.material.icons.outlined.Man
+import androidx.compose.material.icons.outlined.Park
 import androidx.compose.material.icons.outlined.Place
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material.icons.outlined.Wc
@@ -68,9 +69,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.oriooneee.jet.navigation.domain.entities.graph.MasterNavigation
 import com.oriooneee.jet.navigation.domain.entities.graph.InDoorNode
+import com.oriooneee.jet.navigation.domain.entities.graph.MasterNavigation
 import com.oriooneee.jet.navigation.domain.entities.graph.NodeType
+import com.oriooneee.jet.navigation.domain.entities.graph.OutDoorNode
 import com.oriooneee.jet.navigation.domain.entities.graph.SelectNodeResult
 import com.oriooneee.jet.navigation.presentation.KEY_SELECTED_END_NODE
 import com.oriooneee.jet.navigation.presentation.KEY_SELECTED_START_NODE
@@ -171,6 +173,17 @@ fun SelectDestinationScreen(
                 it.type.contains(NodeType.POINT_OF_INTEREST) &&
                         !it.type.contains(NodeType.MAIN_ENTRANCE)
             }
+        }
+    }
+
+    val outDoorPoiNodes by remember(masterNavigation, searchQuery) {
+        derivedStateOf {
+            masterNavigation?.outDoorNavGraph?.nodes?.filter { node ->
+                node.type.contains(NodeType.POINT_OF_INTEREST) &&
+                        !node.type.contains(NodeType.TURN) &&
+                        node.label != null &&
+                        (searchQuery.isEmpty() || node.label.contains(searchQuery, ignoreCase = true))
+            } ?: emptyList()
         }
     }
 
@@ -377,11 +390,58 @@ fun SelectDestinationScreen(
                         }
                     }
 
+                    if (outDoorPoiNodes.isNotEmpty() && selectedBuilding == null) {
+                        item(span = { GridItemSpan(maxLineSpan) }) {
+                            Column {
+                                Text(
+                                    text = "Campus Outdoor",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = Color(0xFF2E7D32),
+                                    modifier = Modifier.padding(bottom = 8.dp, start = 4.dp)
+                                )
+                                FlowRow(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    outDoorPoiNodes.forEach { node ->
+                                        SuggestionChip(
+                                            onClick = {
+                                                handleSelection(
+                                                    SelectNodeResult.SelectedOutDoorNode(node)
+                                                )
+                                            },
+                                            label = { Text(node.label ?: node.id) },
+                                            icon = {
+                                                Icon(
+                                                    Icons.Outlined.Park,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(16.dp)
+                                                )
+                                            },
+                                            colors = SuggestionChipDefaults.suggestionChipColors(
+                                                containerColor = Color(0xFF81C784).copy(alpha = 0.3f),
+                                                labelColor = Color(0xFF1B5E20),
+                                                iconContentColor = Color(0xFF2E7D32)
+                                            ),
+                                            border = SuggestionChipDefaults.suggestionChipBorder(
+                                                enabled = true,
+                                                borderColor = Color.Transparent
+                                            ),
+                                            shape = RoundedCornerShape(12.dp)
+                                        )
+                                    }
+                                }
+                                Spacer(Modifier.height(16.dp))
+                            }
+                        }
+                    }
+
                     if (poiNodes.isNotEmpty()) {
                         item(span = { GridItemSpan(maxLineSpan) }) {
                             Column {
                                 Text(
-                                    text = "Points of Interest",
+                                    text = "Indoor Points of Interest",
                                     style = MaterialTheme.typography.labelLarge,
                                     color = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.padding(bottom = 8.dp, start = 4.dp)

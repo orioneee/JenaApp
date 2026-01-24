@@ -3,10 +3,11 @@ package com.oriooneee.jet.navigation.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.oriooneee.jet.navigation.NavigationEngine
+import com.oriooneee.jet.navigation.ResolvedNode
 import com.oriooneee.jet.navigation.domain.entities.NavigationDirection
 import com.oriooneee.jet.navigation.domain.entities.NavigationStep
-import com.oriooneee.jet.navigation.domain.entities.graph.MasterNavigation
 import com.oriooneee.jet.navigation.domain.entities.graph.InDoorNode
+import com.oriooneee.jet.navigation.domain.entities.graph.MasterNavigation
 import com.oriooneee.jet.navigation.domain.entities.graph.SelectNodeResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,8 +20,8 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 
 data class NavigationUiState(
-    val startNode: InDoorNode? = null,
-    val endNode: InDoorNode? = null,
+    val startNode: ResolvedNode? = null,
+    val endNode: ResolvedNode? = null,
     val navigationSteps: List<NavigationStep> = emptyList(),
     val currentStepIndex: Int = 0,
     val routeStats: NavigationDirection? = null,
@@ -31,6 +32,12 @@ data class NavigationUiState(
         get() = if (navigationSteps.isNotEmpty() && currentStepIndex in navigationSteps.indices) {
             navigationSteps[currentStepIndex]
         } else null
+
+    val startInDoorNode: InDoorNode?
+        get() = (startNode as? ResolvedNode.InDoor)?.node
+
+    val endInDoorNode: InDoorNode?
+        get() = (endNode as? ResolvedNode.InDoor)?.node
 }
 
 class NavigationViewModel : ViewModel() {
@@ -67,7 +74,7 @@ class NavigationViewModel : ViewModel() {
     fun onStartNodeSelected(result: SelectNodeResult) {
         viewModelScope.launch(Dispatchers.Default) {
             val engine = navigationEngine.value ?: return@launch
-            val referenceNode = uiState.value.endNode
+            val referenceNode = uiState.value.endInDoorNode
             val resolvedNode = engine.resolveSelection(result, referenceNode)
 
             withContext(Dispatchers.Main) {
@@ -84,7 +91,7 @@ class NavigationViewModel : ViewModel() {
                     if (uiState.value.endNode != null) {
                         calculateRoute()
                     }
-                } else if (result !is SelectNodeResult.SelectedNode) {
+                } else if (result !is SelectNodeResult.SelectedNode && result !is SelectNodeResult.SelectedOutDoorNode) {
                     _uiState.update { it.copy(error = "Select a destination first to find the nearest start point") }
                 }
             }
@@ -94,7 +101,7 @@ class NavigationViewModel : ViewModel() {
     fun onEndNodeSelected(result: SelectNodeResult) {
         viewModelScope.launch(Dispatchers.Default) {
             val engine = navigationEngine.value ?: return@launch
-            val referenceNode = uiState.value.startNode
+            val referenceNode = uiState.value.startInDoorNode
             val resolvedNode = engine.resolveSelection(result, referenceNode)
 
             withContext(Dispatchers.Main) {
@@ -111,7 +118,7 @@ class NavigationViewModel : ViewModel() {
                     if (uiState.value.startNode != null) {
                         calculateRoute()
                     }
-                } else if (result !is SelectNodeResult.SelectedNode) {
+                } else if (result !is SelectNodeResult.SelectedNode && result !is SelectNodeResult.SelectedOutDoorNode) {
                     _uiState.update { it.copy(error = "Select a start point first to find the nearest destination") }
                 }
             }
@@ -145,10 +152,7 @@ class NavigationViewModel : ViewModel() {
 
             try {
                 val engine = navigationEngine.filterNotNull().first()
-                val result = engine.getRoute(
-                    from = start,
-                    to = end,
-                )
+                val result = engine.getRoute(from = start, to = end)
 
                 withContext(Dispatchers.Main) {
                     _uiState.update {

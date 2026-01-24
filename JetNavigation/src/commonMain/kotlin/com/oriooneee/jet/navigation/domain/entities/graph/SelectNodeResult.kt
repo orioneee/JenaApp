@@ -12,4 +12,6 @@ sealed class SelectNodeResult{
     data object NearestMainEntrance : SelectNodeResult()
     @Serializable
     data class SelectedNode(val node: InDoorNode) : SelectNodeResult()
+    @Serializable
+    data class SelectedOutDoorNode(val node: OutDoorNode) : SelectNodeResult()
 }

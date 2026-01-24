@@ -22,7 +22,21 @@ sealed class NavigationStep {
         val form: Int,
         val to: Int
     ) : NavigationStep()
+    data class TransitionToOutDoor(
+        val fromBuilding: Int
+    ): NavigationStep()
+    data class OutDoorMaps(
+        val path: List<Coordinates>
+    ): NavigationStep()
+    data class TransitionToInDoor(
+        val toBuilding: Int
+    ): NavigationStep()
 }
+
+data class Coordinates(
+    val latitude: Double,
+    val longitude: Double
+)
 
 data class NavigationDirection(
     val steps: List<NavigationStep>,

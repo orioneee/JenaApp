@@ -6641,21 +6641,27 @@
         "id": "OUTDOOR_MAIN_ENTERANCE_5",
         "lon": 28.409398,
         "lat": 49.233289,
-        "type": [],
+        "type": [
+            "MAIN_ENTRANCE"
+        ],
         "label": "Вхід до корпусу 5"
       },
       {
         "id": "OUTDOOR_MAIN_ENTERANCE_1",
         "lon": 28.410626,
         "lat": 49.234726,
-        "type": [],
+        "type": [
+            "MAIN_ENTRANCE"
+        ],
         "label": "Вхід до корпусу 1"
       },
       {
         "id": "OUTDOOR_MAIN_ENTERANCE_2",
         "lon": 28.412079,
         "lat": 49.233725,
-        "type": [],
+        "type": [
+          "MAIN_ENTRANCE"
+        ],
         "label": "Вхід до корпусу 2"
       },
       {
