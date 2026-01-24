@@ -99,7 +99,7 @@ import com.oriooneee.jet.navigation.FloorRenderData
 import com.oriooneee.jet.navigation.TextLabel
 import com.oriooneee.jet.navigation.domain.entities.NavigationDirection
 import com.oriooneee.jet.navigation.domain.entities.NavigationStep
-import com.oriooneee.jet.navigation.domain.entities.graph.Node
+import com.oriooneee.jet.navigation.domain.entities.graph.InDoorNode
 import com.oriooneee.jet.navigation.presentation.navigation.LocalNavController
 import com.oriooneee.jet.navigation.presentation.navigation.Route
 import kotlinx.coroutines.launch
@@ -414,8 +414,8 @@ fun NavigationScreen(
 
 @Composable
 fun DestinationInputPanel(
-    startNode: Node?,
-    endNode: Node?,
+    startNode: InDoorNode?,
+    endNode: InDoorNode?,
     isLoading: Boolean,
     onSelectStart: () -> Unit,
     onSelectEnd: () -> Unit,
@@ -634,8 +634,8 @@ fun NavigationControls(
     isExpanded: Boolean,
     onPrevious: () -> Unit,
     onNext: () -> Unit,
-    startNode: Node?,
-    endNode: Node?,
+    startNode: InDoorNode?,
+    endNode: InDoorNode?,
     isLoading: Boolean,
     onSelectStart: () -> Unit,
     onSelectEnd: () -> Unit,

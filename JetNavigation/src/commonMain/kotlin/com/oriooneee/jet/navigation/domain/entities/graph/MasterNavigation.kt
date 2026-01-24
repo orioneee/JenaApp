@@ -10,10 +10,12 @@ import kotlinx.serialization.json.Json
 
 @Serializable
 data class MasterNavigation(
-    @SerialName("buildings")
+    @SerialName("plan")
     val buildings: List<Building>,
-    @SerialName("navGraph")
-    val navGraph: NavGraph
+    @SerialName("inDoor")
+    val inDoorNavGraph: InDoorNavGraph,
+    @SerialName("outDoor")
+    val outDoorNavGraph: OutDoorNavGraph
 ) {
     companion object {
         private val mutex = Mutex()
@@ -34,7 +36,7 @@ data class MasterNavigation(
             val jsonString = bytes.decodeToString()
 
             return Json.decodeFromString<MasterNavigation>(jsonString).also {
-                val audsCount = it.navGraph.nodes
+                val audsCount = it.inDoorNavGraph.nodes
                     .count { node -> node.type.contains(NodeType.AUDITORIUM) }
 
                 println(

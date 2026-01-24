@@ -1,7 +1,6 @@
 package com.oriooneee.jet.navigation
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.DoorSliding
 import androidx.compose.material.icons.outlined.ExitToApp
 import androidx.compose.material.icons.outlined.Man
 import androidx.compose.material.icons.outlined.Wc
@@ -13,7 +12,7 @@ import com.oriooneee.jet.navigation.domain.entities.NavigationDirection
 import com.oriooneee.jet.navigation.domain.entities.NavigationStep
 import com.oriooneee.jet.navigation.domain.entities.graph.Flor
 import com.oriooneee.jet.navigation.domain.entities.graph.MasterNavigation
-import com.oriooneee.jet.navigation.domain.entities.graph.Node
+import com.oriooneee.jet.navigation.domain.entities.graph.InDoorNode
 import com.oriooneee.jet.navigation.domain.entities.graph.NodeType
 import com.oriooneee.jet.navigation.domain.entities.graph.SelectNodeResult
 
@@ -50,12 +49,12 @@ class NavigationEngine(private val masterNav: MasterNavigation) {
     private val outputWidth = 2000.0
     private val paddingPct = 0.05
     private val adjacency: Map<String, List<Pair<String, Double>>> = buildAdjacencyMap()
-    private val nodesMap: Map<String, Node> = masterNav.navGraph.nodes.associateBy { it.id }
+    private val nodesMap: Map<String, InDoorNode> = masterNav.inDoorNavGraph.nodes.associateBy { it.id }
 
     private fun buildAdjacencyMap(): Map<String, MutableList<Pair<String, Double>>> {
         val adj = mutableMapOf<String, MutableList<Pair<String, Double>>>()
 
-        masterNav.navGraph.edges.forEach { edge ->
+        masterNav.inDoorNavGraph.edges.forEach { edge ->
             adj.getOrPut(edge.from) { mutableListOf() }.add(edge.to to edge.weight)
             adj.getOrPut(edge.to) { mutableListOf() }.add(edge.from to edge.weight)
         }
@@ -65,8 +64,8 @@ class NavigationEngine(private val masterNav: MasterNavigation) {
 
     fun resolveSelection(
         result: SelectNodeResult,
-        referenceNode: Node?
-    ): Node? {
+        referenceNode: InDoorNode?
+    ): InDoorNode? {
         return when (result) {
             is SelectNodeResult.SelectedNode -> result.node
             is SelectNodeResult.NearestManWC -> {
@@ -93,8 +92,8 @@ class NavigationEngine(private val masterNav: MasterNavigation) {
     }
 
     fun getRoute(
-        from: Node,
-        to: Node
+        from: InDoorNode,
+        to: InDoorNode
     ): NavigationDirection {
         val path = findPath(from, to)
 
@@ -108,11 +107,11 @@ class NavigationEngine(private val masterNav: MasterNavigation) {
     }
 
     private fun findNearestNode(
-        referenceNode: Node,
-        criteria: (Node) -> Boolean
-    ): Node? {
+        referenceNode: InDoorNode,
+        criteria: (InDoorNode) -> Boolean
+    ): InDoorNode? {
         val distances = mutableMapOf<String, Double>()
-        masterNav.navGraph.nodes.forEach { distances[it.id] = Double.MAX_VALUE }
+        masterNav.inDoorNavGraph.nodes.forEach { distances[it.id] = Double.MAX_VALUE }
         distances[referenceNode.id] = 0.0
 
         val pq = MinHeap<Pair<String, Double>> { a, b -> a.second.compareTo(b.second) }
@@ -139,11 +138,11 @@ class NavigationEngine(private val masterNav: MasterNavigation) {
         return null
     }
 
-    private fun findPath(start: Node, end: Node): List<Node>? {
+    private fun findPath(start: InDoorNode, end: InDoorNode): List<InDoorNode>? {
         val distances = mutableMapOf<String, Double>()
         val previous = mutableMapOf<String, String>()
 
-        masterNav.navGraph.nodes.forEach { distances[it.id] = Double.MAX_VALUE }
+        masterNav.inDoorNavGraph.nodes.forEach { distances[it.id] = Double.MAX_VALUE }
         distances[start.id] = 0.0
 
         val pq = MinHeap<Pair<String, Double>> { a, b -> a.second.compareTo(b.second) }
@@ -197,7 +196,7 @@ class NavigationEngine(private val masterNav: MasterNavigation) {
             return null
         }
 
-        val path = mutableListOf<Node>()
+        val path = mutableListOf<InDoorNode>()
         var current: String? = end.id
 
         while (current != null) {
@@ -212,12 +211,12 @@ class NavigationEngine(private val masterNav: MasterNavigation) {
         return path.reversed()
     }
 
-    private fun calculateTotalDistance(path: List<Node>): Double {
+    private fun calculateTotalDistance(path: List<InDoorNode>): Double {
         var distance = 0.0
         for (i in 0 until path.size - 1) {
             val u = path[i]
             val v = path[i + 1]
-            val edge = masterNav.navGraph.edges.find {
+            val edge = masterNav.inDoorNavGraph.edges.find {
                 (it.from == u.id && it.to == v.id) || (it.to == u.id && it.from == v.id)
             }
             distance += edge?.weight ?: 0.0
@@ -228,10 +227,10 @@ class NavigationEngine(private val masterNav: MasterNavigation) {
     private data class PathSegment(
         val buildingNum: Int,
         val floorNum: Int,
-        val nodes: List<Node>
+        val nodes: List<InDoorNode>
     )
 
-    private fun buildNavigationSteps(fullPath: List<Node>): List<NavigationStep> {
+    private fun buildNavigationSteps(fullPath: List<InDoorNode>): List<NavigationStep> {
         val steps = mutableListOf<NavigationStep>()
         if (fullPath.isEmpty()) return steps
 
@@ -298,11 +297,11 @@ class NavigationEngine(private val masterNav: MasterNavigation) {
         return steps
     }
 
-    private fun groupPathByLocation(path: List<Node>): List<PathSegment> {
+    private fun groupPathByLocation(path: List<InDoorNode>): List<PathSegment> {
         val segments = mutableListOf<PathSegment>()
         if (path.isEmpty()) return segments
 
-        var currentNodes = mutableListOf<Node>()
+        var currentNodes = mutableListOf<InDoorNode>()
         var (currentBuilding, currentFloor) = path.first().buildNum to path.first().floorNum
 
         path.forEach { node ->
@@ -334,9 +333,9 @@ class NavigationEngine(private val masterNav: MasterNavigation) {
     private fun generateFloorData(
         flor: Flor,
         buildingId: Int,
-        stepPath: List<Node>,
-        globalStart: Node,
-        globalEnd: Node
+        stepPath: List<InDoorNode>,
+        globalStart: InDoorNode,
+        globalEnd: InDoorNode
     ): FloorRenderData {
         val allX = mutableListOf<Double>()
         val allY = mutableListOf<Double>()
@@ -444,7 +443,7 @@ class NavigationEngine(private val masterNav: MasterNavigation) {
         }
 
         val icons = mutableListOf<IconLabel>()
-        val floorNodes = masterNav.navGraph.nodes.filter {
+        val floorNodes = masterNav.inDoorNavGraph.nodes.filter {
             it.buildNum == buildingId && it.floorNum == flor.num
         }
 

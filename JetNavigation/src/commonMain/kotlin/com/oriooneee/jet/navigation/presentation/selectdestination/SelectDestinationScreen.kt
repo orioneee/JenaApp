@@ -29,7 +29,6 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Class
 import androidx.compose.material.icons.outlined.DirectionsWalk
-import androidx.compose.material.icons.outlined.DoorFront
 import androidx.compose.material.icons.outlined.ExitToApp
 import androidx.compose.material.icons.outlined.Man
 import androidx.compose.material.icons.outlined.Place
@@ -70,7 +69,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.oriooneee.jet.navigation.domain.entities.graph.MasterNavigation
-import com.oriooneee.jet.navigation.domain.entities.graph.Node
+import com.oriooneee.jet.navigation.domain.entities.graph.InDoorNode
 import com.oriooneee.jet.navigation.domain.entities.graph.NodeType
 import com.oriooneee.jet.navigation.domain.entities.graph.SelectNodeResult
 import com.oriooneee.jet.navigation.presentation.KEY_SELECTED_END_NODE
@@ -106,7 +105,7 @@ fun SelectDestinationScreen(
     }
 
     val nodesInfo = remember(masterNavigation) {
-        masterNavigation?.navGraph?.nodes?.filter { node ->
+        masterNavigation?.inDoorNavGraph?.nodes?.filter { node ->
             !node.type.containsAny(
                 NodeType.STAIRS,
                 NodeType.TRANSFER_TO_ANOTHER_BUILDING,
@@ -512,7 +511,7 @@ fun QuickActionButton(
 }
 
 @Composable
-fun NodeListItem(node: Node, onClick: () -> Unit) {
+fun NodeListItem(node: InDoorNode, onClick: () -> Unit) {
     val (icon, color) = when {
         node.type.contains(NodeType.POINT_OF_INTEREST) -> Icons.Outlined.Star to MaterialTheme.colorScheme.primary
         node.type.contains(NodeType.MAIN_ENTRANCE) -> Icons.Outlined.ExitToApp to Color(0xFF4CAF50)

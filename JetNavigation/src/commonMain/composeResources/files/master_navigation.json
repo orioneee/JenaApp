@@ -1,5 +1,5 @@
 {
-  "navGraph": {
+  "inDoor": {
     "nodes": [
       {
         "id": "TURN_1_b_2",
@@ -2103,15 +2103,15 @@
         "floorNum": 1
       },
       {
-        "id": "MAIN_ENETRANCE_BUILDING_5_1_b_5",
+        "id": "MAIN_ENTRANCE_BUIDING_5_1_b_5",
         "x": 76.3,
         "y": 15.01,
         "z": 3.4,
         "buildNum": "5",
         "floorNum": 1,
-        "label": "Головний вхід в 5 корпус",
+        "label": "Головний вхід у 5 корпус",
         "type": [
-            "MAIN_ENTRANCE"
+          "MAIN_ENTRANCE"
         ]
       },
       {
@@ -4277,6 +4277,14 @@
       },
       {
         "id": "NODE_2_b_5",
+        "x": 79.82,
+        "y": 70.68,
+        "z": 3.4,
+        "buildNum": "5",
+        "floorNum": 1
+      },
+      {
+        "id": "NODE_3_b_5",
         "x": 60.88,
         "y": 20.93,
         "z": 10.2,
@@ -5496,7 +5504,7 @@
         "weight": 1.37
       },
       {
-        "from": "MAIN_ENETRANCE_BUILDING_5_1_b_5",
+        "from": "MAIN_ENTRANCE_BUIDING_5_1_b_5",
         "to": "TURN_3_b_5",
         "weight": 10.86
       },
@@ -5881,9 +5889,9 @@
         "weight": 0.52
       },
       {
-        "from": "TURN_148_b_5",
+        "from": "NODE_2_b_5",
         "to": "TURN_80_b_5",
-        "weight": 13.69
+        "weight": 2.34
       },
       {
         "from": "TURN_78_b_5",
@@ -6291,7 +6299,7 @@
         "weight": 4.5
       },
       {
-        "from": "NODE_2_b_5",
+        "from": "NODE_3_b_5",
         "to": "TURN_116_b_5",
         "weight": 4.5
       },
@@ -6606,13 +6614,971 @@
         "weight": 5.95
       },
       {
+        "from": "NODE_2_b_5",
+        "to": "TURN_148_b_5",
+        "weight": 11.44
+      },
+      {
         "from": "TRANSFER_FROM_2_TO_5_1_b_2",
         "to": "TRANSFER_FROM_5_TO_2_1_b_5",
+        "weight": 0.0
+      },
+      {
+        "from": "OUTDOOR_MAIN_ENTERANCE_5",
+        "to": "MAIN_ENTRANCE_BUIDING_5_1_b_5",
+        "weight": 0.0
+      },
+      {
+        "from": "OUTDOOR_MAIN_ENTERANCE_2",
+        "to": "MAIN_ENTRANCE_BUIDING_2_1_b_2",
         "weight": 0.0
       }
     ]
   },
-  "buildings": [
+  "outDoor": {
+    "nodes": [
+      {
+        "id": "OUTDOOR_MAIN_ENTERANCE_5",
+        "lon": 28.409398,
+        "lat": 49.233289,
+        "type": [],
+        "label": "Вхід до корпусу 5"
+      },
+      {
+        "id": "OUTDOOR_MAIN_ENTERANCE_1",
+        "lon": 28.410626,
+        "lat": 49.234726,
+        "type": [],
+        "label": "Вхід до корпусу 1"
+      },
+      {
+        "id": "OUTDOOR_MAIN_ENTERANCE_2",
+        "lon": 28.412079,
+        "lat": 49.233725,
+        "type": [],
+        "label": "Вхід до корпусу 2"
+      },
+      {
+        "id": "POI_BIGMAN",
+        "lon": 28.413243,
+        "lat": 49.234562,
+        "label": "BigMan",
+        "type": [
+          "POI"
+        ]
+      },
+      {
+        "id": "POI_BAKERY",
+        "lon": 28.413195,
+        "lat": 49.234572,
+        "label": "Пекарня",
+        "type": [
+          "POI"
+        ]
+      },
+      {
+        "id": "POI_PRINTING",
+        "lon": 28.412903,
+        "lat": 49.234631,
+        "label": "Копіцентр",
+        "type": [
+          "POI"
+        ]
+      },
+      {
+        "id": "POI_ATB",
+        "lon": 28.407126,
+        "lat": 49.231916,
+        "label": "АТБ",
+        "type": [
+          "POI"
+        ]
+      },
+      {
+        "id": "TURN_OUTDOOR_1",
+        "lon": 28.412504,
+        "lat": 49.234438
+      },
+      {
+        "id": "TURN_OUTDOOR_2",
+        "lon": 28.412645,
+        "lat": 49.233321
+      },
+      {
+        "id": "TURN_OUTDOOR_3",
+        "lon": 28.412654,
+        "lat": 49.23473
+      },
+      {
+        "id": "TURN_OUTDOOR_4",
+        "lon": 28.4129,
+        "lat": 49.234734
+      },
+      {
+        "id": "TURN_OUTDOOR_5",
+        "lon": 28.413077,
+        "lat": 49.234608
+      },
+      {
+        "id": "TURN_OUTDOOR_6",
+        "lon": 28.4132,
+        "lat": 49.234581
+      },
+      {
+        "id": "TURN_OUTDOOR_7",
+        "lon": 28.412907,
+        "lat": 49.234641
+      },
+      {
+        "id": "TURN_OUTDOOR_8",
+        "lon": 28.408117,
+        "lat": 49.233321
+      },
+      {
+        "id": "TURN_OUTDOOR_9",
+        "lon": 28.407221,
+        "lat": 49.231899
+      },
+      {
+        "id": "TURN_OUTDOOR_10",
+        "lon": 28.407879,
+        "lat": 49.233366
+      },
+      {
+        "id": "TURN_OUTDOOR_11",
+        "lon": 28.409114,
+        "lat": 49.235566
+      },
+      {
+        "id": "TURN_OUTDOOR_12",
+        "lon": 28.412461,
+        "lat": 49.234448
+      },
+      {
+        "id": "TURN_OUTDOOR_13",
+        "lon": 28.412306,
+        "lat": 49.234157
+      },
+      {
+        "id": "TURN_OUTDOOR_14",
+        "lon": 28.412187,
+        "lat": 49.233934
+      },
+      {
+        "id": "TURN_OUTDOOR_15",
+        "lon": 28.410908,
+        "lat": 49.234773
+      },
+      {
+        "id": "TURN_OUTDOOR_16",
+        "lon": 28.412311,
+        "lat": 49.234478
+      },
+      {
+        "id": "TURN_OUTDOOR_17",
+        "lon": 28.410679,
+        "lat": 49.234826
+      },
+      {
+        "id": "TURN_OUTDOOR_18",
+        "lon": 28.410848,
+        "lat": 49.235138
+      },
+      {
+        "id": "TURN_OUTDOOR_19",
+        "lon": 28.40895,
+        "lat": 49.23314
+      },
+      {
+        "id": "TURN_OUTDOOR_20",
+        "lon": 28.411458,
+        "lat": 49.232865
+      },
+      {
+        "id": "TURN_OUTDOOR_21",
+        "lon": 28.412305,
+        "lat": 49.232939
+      },
+      {
+        "id": "TURN_OUTDOOR_22",
+        "lon": 28.413137,
+        "lat": 49.2343
+      },
+      {
+        "id": "TURN_OUTDOOR_23",
+        "lon": 28.412683,
+        "lat": 49.234781
+      },
+      {
+        "id": "TURN_OUTDOOR_24",
+        "lon": 28.413118,
+        "lat": 49.234687
+      },
+      {
+        "id": "TURN_OUTDOOR_25",
+        "lon": 28.413248,
+        "lat": 49.234571
+      },
+      {
+        "id": "TURN_OUTDOOR_26",
+        "lon": 28.412854,
+        "lat": 49.234652
+      },
+      {
+        "id": "TURN_OUTDOOR_27",
+        "lon": 28.412903,
+        "lat": 49.234631
+      },
+      {
+        "id": "TURN_OUTDOOR_28",
+        "lon": 28.413243,
+        "lat": 49.234562
+      },
+      {
+        "id": "TURN_OUTDOOR_29",
+        "lon": 28.413195,
+        "lat": 49.234572
+      },
+      {
+        "id": "TURN_OUTDOOR_30",
+        "lon": 28.407135,
+        "lat": 49.230972
+      },
+      {
+        "id": "TURN_OUTDOOR_31",
+        "lon": 28.406842,
+        "lat": 49.231022
+      },
+      {
+        "id": "TURN_OUTDOOR_32",
+        "lon": 28.407126,
+        "lat": 49.231916
+      },
+      {
+        "id": "TURN_OUTDOOR_33",
+        "lon": 28.408907,
+        "lat": 49.235636
+      },
+      {
+        "id": "TURN_OUTDOOR_34",
+        "lon": 28.41227,
+        "lat": 49.233915
+      },
+      {
+        "id": "TURN_OUTDOOR_35",
+        "lon": 28.412127,
+        "lat": 49.233817
+      },
+      {
+        "id": "TURN_OUTDOOR_36",
+        "lon": 28.412079,
+        "lat": 49.233725
+      },
+      {
+        "id": "TURN_OUTDOOR_37",
+        "lon": 28.412127,
+        "lat": 49.233816
+      },
+      {
+        "id": "TURN_OUTDOOR_38",
+        "lon": 28.411681,
+        "lat": 49.23418
+      },
+      {
+        "id": "TURN_OUTDOOR_39",
+        "lon": 28.411763,
+        "lat": 49.234185
+      },
+      {
+        "id": "TURN_OUTDOOR_40",
+        "lon": 28.411831,
+        "lat": 49.234172
+      },
+      {
+        "id": "TURN_OUTDOOR_41",
+        "lon": 28.411902,
+        "lat": 49.23417
+      },
+      {
+        "id": "TURN_OUTDOOR_42",
+        "lon": 28.411945,
+        "lat": 49.234194
+      },
+      {
+        "id": "TURN_OUTDOOR_43",
+        "lon": 28.411982,
+        "lat": 49.234238
+      },
+      {
+        "id": "TURN_OUTDOOR_44",
+        "lon": 28.411999,
+        "lat": 49.234283
+      },
+      {
+        "id": "TURN_OUTDOOR_45",
+        "lon": 28.411997,
+        "lat": 49.234325
+      },
+      {
+        "id": "TURN_OUTDOOR_46",
+        "lon": 28.411935,
+        "lat": 49.234383
+      },
+      {
+        "id": "TURN_OUTDOOR_47",
+        "lon": 28.411835,
+        "lat": 49.234426
+      },
+      {
+        "id": "TURN_OUTDOOR_48",
+        "lon": 28.411745,
+        "lat": 49.234444
+      },
+      {
+        "id": "TURN_OUTDOOR_49",
+        "lon": 28.411689,
+        "lat": 49.234422
+      },
+      {
+        "id": "TURN_OUTDOOR_50",
+        "lon": 28.411647,
+        "lat": 49.23439
+      },
+      {
+        "id": "TURN_OUTDOOR_51",
+        "lon": 28.411306,
+        "lat": 49.234505
+      },
+      {
+        "id": "TURN_OUTDOOR_52",
+        "lon": 28.411929,
+        "lat": 49.234385
+      },
+      {
+        "id": "TURN_OUTDOOR_53",
+        "lon": 28.411981,
+        "lat": 49.234237
+      },
+      {
+        "id": "TURN_OUTDOOR_54",
+        "lon": 28.411304,
+        "lat": 49.234504
+      },
+      {
+        "id": "TURN_OUTDOOR_55",
+        "lon": 28.411545,
+        "lat": 49.234297
+      },
+      {
+        "id": "TURN_OUTDOOR_56",
+        "lon": 28.411588,
+        "lat": 49.234326
+      },
+      {
+        "id": "TURN_OUTDOOR_57",
+        "lon": 28.411651,
+        "lat": 49.234391
+      },
+      {
+        "id": "TURN_OUTDOOR_58",
+        "lon": 28.411543,
+        "lat": 49.234299
+      },
+      {
+        "id": "TURN_OUTDOOR_59",
+        "lon": 28.411687,
+        "lat": 49.234178
+      },
+      {
+        "id": "TURN_OUTDOOR_60",
+        "lon": 28.410626,
+        "lat": 49.234726
+      },
+      {
+        "id": "TURN_OUTDOOR_61",
+        "lon": 28.40947,
+        "lat": 49.235098
+      },
+      {
+        "id": "TURN_OUTDOOR_62",
+        "lon": 28.409375,
+        "lat": 49.23508
+      },
+      {
+        "id": "TURN_OUTDOOR_63",
+        "lon": 28.409345,
+        "lat": 49.235062
+      },
+      {
+        "id": "TURN_OUTDOOR_64",
+        "lon": 28.409328,
+        "lat": 49.235047
+      },
+      {
+        "id": "TURN_OUTDOOR_65",
+        "lon": 28.409242,
+        "lat": 49.234855
+      },
+      {
+        "id": "TURN_OUTDOOR_66",
+        "lon": 28.409245,
+        "lat": 49.234824
+      },
+      {
+        "id": "TURN_OUTDOOR_67",
+        "lon": 28.409256,
+        "lat": 49.234792
+      },
+      {
+        "id": "TURN_OUTDOOR_68",
+        "lon": 28.409319,
+        "lat": 49.234744
+      },
+      {
+        "id": "TURN_OUTDOOR_69",
+        "lon": 28.409689,
+        "lat": 49.234663
+      },
+      {
+        "id": "TURN_OUTDOOR_70",
+        "lon": 28.409353,
+        "lat": 49.233059
+      },
+      {
+        "id": "TURN_OUTDOOR_71",
+        "lon": 28.409458,
+        "lat": 49.233274
+      },
+      {
+        "id": "TURN_OUTDOOR_72",
+        "lon": 28.409398,
+        "lat": 49.233289
+      },
+      {
+        "id": "TURN_OUTDOOR_73",
+        "lon": 28.409366,
+        "lat": 49.233056
+      },
+      {
+        "id": "TURN_OUTDOOR_74",
+        "lon": 28.410341,
+        "lat": 49.232835
+      },
+      {
+        "id": "TURN_OUTDOOR_75",
+        "lon": 28.410441,
+        "lat": 49.233015
+      },
+      {
+        "id": "TURN_OUTDOOR_76",
+        "lon": 28.410475,
+        "lat": 49.233049
+      },
+      {
+        "id": "TURN_OUTDOOR_77",
+        "lon": 28.410531,
+        "lat": 49.233062
+      },
+      {
+        "id": "TURN_OUTDOOR_78",
+        "lon": 28.411566,
+        "lat": 49.233088
+      },
+      {
+        "id": "TURN_OUTDOOR_79",
+        "lon": 28.411853,
+        "lat": 49.232775
+      },
+      {
+        "id": "TURN_OUTDOOR_80",
+        "lon": 28.412461,
+        "lat": 49.232986
+      },
+      {
+        "id": "TURN_OUTDOOR_81",
+        "lon": 28.412471,
+        "lat": 49.233496
+      },
+      {
+        "id": "TURN_OUTDOOR_82",
+        "lon": 28.412438,
+        "lat": 49.233552
+      },
+      {
+        "id": "TURN_OUTDOOR_83",
+        "lon": 28.412428,
+        "lat": 49.233617
+      },
+      {
+        "id": "TURN_OUTDOOR_84",
+        "lon": 28.412446,
+        "lat": 49.23368
+      },
+      {
+        "id": "TURN_OUTDOOR_85",
+        "lon": 28.412234,
+        "lat": 49.233739
+      },
+      {
+        "id": "TURN_OUTDOOR_86",
+        "lon": 28.409444,
+        "lat": 49.235441
+      }
+    ],
+    "edges": [
+      {
+        "from": "TURN_OUTDOOR_1",
+        "to": "TURN_OUTDOOR_22",
+        "weight": 71.93
+      },
+      {
+        "from": "TURN_OUTDOOR_22",
+        "to": "TURN_OUTDOOR_2",
+        "weight": 121.66
+      },
+      {
+        "from": "TURN_OUTDOOR_3",
+        "to": "TURN_OUTDOOR_23",
+        "weight": 6.55
+      },
+      {
+        "from": "TURN_OUTDOOR_23",
+        "to": "TURN_OUTDOOR_4",
+        "weight": 24.64
+      },
+      {
+        "from": "TURN_OUTDOOR_4",
+        "to": "TURN_OUTDOOR_24",
+        "weight": 24.75
+      },
+      {
+        "from": "TURN_OUTDOOR_24",
+        "to": "TURN_OUTDOOR_5",
+        "weight": 9.88
+      },
+      {
+        "from": "TURN_OUTDOOR_5",
+        "to": "TURN_OUTDOOR_6",
+        "weight": 13.99
+      },
+      {
+        "from": "TURN_OUTDOOR_6",
+        "to": "TURN_OUTDOOR_25",
+        "weight": 5.44
+      },
+      {
+        "from": "TURN_OUTDOOR_4",
+        "to": "TURN_OUTDOOR_26",
+        "weight": 10.43
+      },
+      {
+        "from": "TURN_OUTDOOR_26",
+        "to": "TURN_OUTDOOR_7",
+        "weight": 5.99
+      },
+      {
+        "from": "TURN_OUTDOOR_7",
+        "to": "TURN_OUTDOOR_27",
+        "weight": 1.22
+      },
+      {
+        "from": "TURN_OUTDOOR_7",
+        "to": "TURN_OUTDOOR_5",
+        "weight": 19.2
+      },
+      {
+        "from": "TURN_OUTDOOR_25",
+        "to": "TURN_OUTDOOR_28",
+        "weight": 1.11
+      },
+      {
+        "from": "TURN_OUTDOOR_6",
+        "to": "TURN_OUTDOOR_29",
+        "weight": 1.11
+      },
+      {
+        "from": "TURN_OUTDOOR_8",
+        "to": "TURN_OUTDOOR_30",
+        "weight": 282.61
+      },
+      {
+        "from": "TURN_OUTDOOR_30",
+        "to": "TURN_OUTDOOR_31",
+        "weight": 32.97
+      },
+      {
+        "from": "TURN_OUTDOOR_31",
+        "to": "TURN_OUTDOOR_9",
+        "weight": 106.0
+      },
+      {
+        "from": "TURN_OUTDOOR_9",
+        "to": "TURN_OUTDOOR_32",
+        "weight": 10.77
+      },
+      {
+        "from": "TURN_OUTDOOR_8",
+        "to": "TURN_OUTDOOR_10",
+        "weight": 26.86
+      },
+      {
+        "from": "TURN_OUTDOOR_10",
+        "to": "TURN_OUTDOOR_9",
+        "weight": 178.49
+      },
+      {
+        "from": "TURN_OUTDOOR_11",
+        "to": "TURN_OUTDOOR_33",
+        "weight": 24.31
+      },
+      {
+        "from": "TURN_OUTDOOR_33",
+        "to": "TURN_OUTDOOR_10",
+        "weight": 276.61
+      },
+      {
+        "from": "TURN_OUTDOOR_3",
+        "to": "TURN_OUTDOOR_1",
+        "weight": 36.41
+      },
+      {
+        "from": "TURN_OUTDOOR_1",
+        "to": "TURN_OUTDOOR_12",
+        "weight": 4.88
+      },
+      {
+        "from": "TURN_OUTDOOR_12",
+        "to": "TURN_OUTDOOR_13",
+        "weight": 36.63
+      },
+      {
+        "from": "TURN_OUTDOOR_13",
+        "to": "TURN_OUTDOOR_14",
+        "weight": 28.08
+      },
+      {
+        "from": "TURN_OUTDOOR_14",
+        "to": "TURN_OUTDOOR_34",
+        "weight": 9.44
+      },
+      {
+        "from": "TURN_OUTDOOR_14",
+        "to": "TURN_OUTDOOR_35",
+        "weight": 14.54
+      },
+      {
+        "from": "TURN_OUTDOOR_35",
+        "to": "TURN_OUTDOOR_36",
+        "weight": 11.54
+      },
+      {
+        "from": "TURN_OUTDOOR_37",
+        "to": "TURN_OUTDOOR_38",
+        "weight": 63.94
+      },
+      {
+        "from": "TURN_OUTDOOR_38",
+        "to": "TURN_OUTDOOR_39",
+        "weight": 9.1
+      },
+      {
+        "from": "TURN_OUTDOOR_39",
+        "to": "TURN_OUTDOOR_40",
+        "weight": 7.66
+      },
+      {
+        "from": "TURN_OUTDOOR_40",
+        "to": "TURN_OUTDOOR_41",
+        "weight": 7.88
+      },
+      {
+        "from": "TURN_OUTDOOR_41",
+        "to": "TURN_OUTDOOR_42",
+        "weight": 5.44
+      },
+      {
+        "from": "TURN_OUTDOOR_42",
+        "to": "TURN_OUTDOOR_43",
+        "weight": 6.33
+      },
+      {
+        "from": "TURN_OUTDOOR_43",
+        "to": "TURN_OUTDOOR_44",
+        "weight": 5.33
+      },
+      {
+        "from": "TURN_OUTDOOR_44",
+        "to": "TURN_OUTDOOR_45",
+        "weight": 4.66
+      },
+      {
+        "from": "TURN_OUTDOOR_45",
+        "to": "TURN_OUTDOOR_46",
+        "weight": 9.44
+      },
+      {
+        "from": "TURN_OUTDOOR_46",
+        "to": "TURN_OUTDOOR_47",
+        "weight": 12.1
+      },
+      {
+        "from": "TURN_OUTDOOR_47",
+        "to": "TURN_OUTDOOR_48",
+        "weight": 10.21
+      },
+      {
+        "from": "TURN_OUTDOOR_48",
+        "to": "TURN_OUTDOOR_49",
+        "weight": 6.66
+      },
+      {
+        "from": "TURN_OUTDOOR_49",
+        "to": "TURN_OUTDOOR_50",
+        "weight": 5.88
+      },
+      {
+        "from": "TURN_OUTDOOR_50",
+        "to": "TURN_OUTDOOR_51",
+        "weight": 39.96
+      },
+      {
+        "from": "TURN_OUTDOOR_51",
+        "to": "TURN_OUTDOOR_15",
+        "weight": 53.28
+      },
+      {
+        "from": "TURN_OUTDOOR_15",
+        "to": "TURN_OUTDOOR_16",
+        "weight": 159.17
+      },
+      {
+        "from": "TURN_OUTDOOR_16",
+        "to": "TURN_OUTDOOR_12",
+        "weight": 16.98
+      },
+      {
+        "from": "TURN_OUTDOOR_52",
+        "to": "TURN_OUTDOOR_16",
+        "weight": 43.62
+      },
+      {
+        "from": "TURN_OUTDOOR_53",
+        "to": "TURN_OUTDOOR_13",
+        "weight": 37.19
+      },
+      {
+        "from": "TURN_OUTDOOR_54",
+        "to": "TURN_OUTDOOR_55",
+        "weight": 35.3
+      },
+      {
+        "from": "TURN_OUTDOOR_55",
+        "to": "TURN_OUTDOOR_56",
+        "weight": 5.77
+      },
+      {
+        "from": "TURN_OUTDOOR_56",
+        "to": "TURN_OUTDOOR_57",
+        "weight": 10.1
+      },
+      {
+        "from": "TURN_OUTDOOR_58",
+        "to": "TURN_OUTDOOR_59",
+        "weight": 20.87
+      },
+      {
+        "from": "TURN_OUTDOOR_15",
+        "to": "TURN_OUTDOOR_17",
+        "weight": 26.09
+      },
+      {
+        "from": "TURN_OUTDOOR_17",
+        "to": "TURN_OUTDOOR_60",
+        "weight": 12.54
+      },
+      {
+        "from": "TURN_OUTDOOR_18",
+        "to": "TURN_OUTDOOR_17",
+        "weight": 39.41
+      },
+      {
+        "from": "TURN_OUTDOOR_17",
+        "to": "TURN_OUTDOOR_61",
+        "weight": 137.53
+      },
+      {
+        "from": "TURN_OUTDOOR_61",
+        "to": "TURN_OUTDOOR_62",
+        "weight": 10.77
+      },
+      {
+        "from": "TURN_OUTDOOR_62",
+        "to": "TURN_OUTDOOR_63",
+        "weight": 3.88
+      },
+      {
+        "from": "TURN_OUTDOOR_63",
+        "to": "TURN_OUTDOOR_64",
+        "weight": 2.55
+      },
+      {
+        "from": "TURN_OUTDOOR_64",
+        "to": "TURN_OUTDOOR_65",
+        "weight": 23.31
+      },
+      {
+        "from": "TURN_OUTDOOR_65",
+        "to": "TURN_OUTDOOR_66",
+        "weight": 3.44
+      },
+      {
+        "from": "TURN_OUTDOOR_66",
+        "to": "TURN_OUTDOOR_67",
+        "weight": 3.77
+      },
+      {
+        "from": "TURN_OUTDOOR_67",
+        "to": "TURN_OUTDOOR_68",
+        "weight": 8.77
+      },
+      {
+        "from": "TURN_OUTDOOR_68",
+        "to": "TURN_OUTDOOR_69",
+        "weight": 42.07
+      },
+      {
+        "from": "TURN_OUTDOOR_69",
+        "to": "TURN_OUTDOOR_19",
+        "weight": 187.92
+      },
+      {
+        "from": "TURN_OUTDOOR_19",
+        "to": "TURN_OUTDOOR_70",
+        "weight": 45.62
+      },
+      {
+        "from": "TURN_OUTDOOR_70",
+        "to": "TURN_OUTDOOR_71",
+        "weight": 26.53
+      },
+      {
+        "from": "TURN_OUTDOOR_71",
+        "to": "TURN_OUTDOOR_72",
+        "weight": 6.88
+      },
+      {
+        "from": "TURN_OUTDOOR_73",
+        "to": "TURN_OUTDOOR_74",
+        "weight": 111.0
+      },
+      {
+        "from": "TURN_OUTDOOR_74",
+        "to": "TURN_OUTDOOR_75",
+        "weight": 22.87
+      },
+      {
+        "from": "TURN_OUTDOOR_75",
+        "to": "TURN_OUTDOOR_76",
+        "weight": 5.33
+      },
+      {
+        "from": "TURN_OUTDOOR_76",
+        "to": "TURN_OUTDOOR_77",
+        "weight": 6.33
+      },
+      {
+        "from": "TURN_OUTDOOR_77",
+        "to": "TURN_OUTDOOR_20",
+        "weight": 105.23
+      },
+      {
+        "from": "TURN_OUTDOOR_20",
+        "to": "TURN_OUTDOOR_78",
+        "weight": 27.53
+      },
+      {
+        "from": "TURN_OUTDOOR_78",
+        "to": "TURN_OUTDOOR_21",
+        "weight": 83.69
+      },
+      {
+        "from": "TURN_OUTDOOR_21",
+        "to": "TURN_OUTDOOR_79",
+        "weight": 53.39
+      },
+      {
+        "from": "TURN_OUTDOOR_79",
+        "to": "TURN_OUTDOOR_20",
+        "weight": 44.95
+      },
+      {
+        "from": "TURN_OUTDOOR_21",
+        "to": "TURN_OUTDOOR_80",
+        "weight": 18.09
+      },
+      {
+        "from": "TURN_OUTDOOR_80",
+        "to": "TURN_OUTDOOR_2",
+        "weight": 42.4
+      },
+      {
+        "from": "TURN_OUTDOOR_2",
+        "to": "TURN_OUTDOOR_81",
+        "weight": 27.42
+      },
+      {
+        "from": "TURN_OUTDOOR_81",
+        "to": "TURN_OUTDOOR_82",
+        "weight": 7.21
+      },
+      {
+        "from": "TURN_OUTDOOR_82",
+        "to": "TURN_OUTDOOR_83",
+        "weight": 7.33
+      },
+      {
+        "from": "TURN_OUTDOOR_83",
+        "to": "TURN_OUTDOOR_84",
+        "weight": 7.33
+      },
+      {
+        "from": "TURN_OUTDOOR_84",
+        "to": "TURN_OUTDOOR_85",
+        "weight": 24.42
+      },
+      {
+        "from": "TURN_OUTDOOR_85",
+        "to": "TURN_OUTDOOR_37",
+        "weight": 14.65
+      },
+      {
+        "from": "TURN_OUTDOOR_3",
+        "to": "TURN_OUTDOOR_18",
+        "weight": 205.57
+      },
+      {
+        "from": "TURN_OUTDOOR_18",
+        "to": "TURN_OUTDOOR_86",
+        "weight": 159.4
+      },
+      {
+        "from": "TURN_OUTDOOR_86",
+        "to": "TURN_OUTDOOR_11",
+        "weight": 39.18
+      },
+      {
+        "from": "TURN_OUTDOOR_11",
+        "to": "TURN_OUTDOOR_8",
+        "weight": 272.62
+      },
+      {
+        "from": "TURN_OUTDOOR_8",
+        "to": "TURN_OUTDOOR_19",
+        "weight": 94.57
+      }
+    ]
+  },
+  "plan": [
     {
       "buildNum": "2",
       "plan": [
@@ -8054,19 +9020,6 @@
                 "closed": false,
                 "points": [
                   [
-                    445.62,
-                    210.94
-                  ],
-                  [
-                    436.23,
-                    210.94
-                  ]
-                ]
-              },
-              {
-                "closed": false,
-                "points": [
-                  [
                     413.9,
                     199.69
                   ],
@@ -8262,38 +9215,12 @@
                 "closed": false,
                 "points": [
                   [
-                    472.55,
-                    191.8
-                  ],
-                  [
-                    472.55,
-                    188.68
-                  ]
-                ]
-              },
-              {
-                "closed": false,
-                "points": [
-                  [
-                    472.55,
+                    472.15,
                     188.68
                   ],
                   [
-                    475.71,
+                    475.98,
                     188.68
-                  ]
-                ]
-              },
-              {
-                "closed": false,
-                "points": [
-                  [
-                    475.71,
-                    188.68
-                  ],
-                  [
-                    475.71,
-                    191.8
                   ]
                 ]
               },
@@ -8306,7 +9233,7 @@
                   ],
                   [
                     513.67,
-                    210.94
+                    210.58
                   ]
                 ]
               },
@@ -8332,7 +9259,7 @@
                   ],
                   [
                     461.53,
-                    210.97
+                    210.58
                   ]
                 ]
               },
@@ -8345,7 +9272,7 @@
                   ],
                   [
                     464.69,
-                    210.94
+                    210.58
                   ]
                 ]
               },
@@ -8358,7 +9285,7 @@
                   ],
                   [
                     473.57,
-                    210.94
+                    210.58
                   ]
                 ]
               },
@@ -8371,7 +9298,7 @@
                   ],
                   [
                     476.85,
-                    210.94
+                    210.58
                   ]
                 ]
               },
@@ -8384,7 +9311,7 @@
                   ],
                   [
                     480.76,
-                    210.94
+                    210.58
                   ]
                 ]
               },
@@ -8397,7 +9324,7 @@
                   ],
                   [
                     483.88,
-                    210.94
+                    210.58
                   ]
                 ]
               },
@@ -8410,7 +9337,7 @@
                   ],
                   [
                     490.56,
-                    210.94
+                    210.58
                   ]
                 ]
               },
@@ -8423,7 +9350,7 @@
                   ],
                   [
                     493.44,
-                    211.01
+                    210.58
                   ]
                 ]
               },
@@ -8436,7 +9363,7 @@
                   ],
                   [
                     497.04,
-                    210.97
+                    210.58
                   ]
                 ]
               },
@@ -8449,7 +9376,7 @@
                   ],
                   [
                     500.28,
-                    210.94
+                    210.58
                   ]
                 ]
               },
@@ -8462,7 +9389,7 @@
                   ],
                   [
                     507.07,
-                    210.94
+                    210.58
                   ]
                 ]
               },
@@ -8475,7 +9402,7 @@
                   ],
                   [
                     510.55,
-                    210.94
+                    210.58
                   ]
                 ]
               },
@@ -8540,7 +9467,7 @@
                   ],
                   [
                     523.74,
-                    210.93
+                    210.58
                   ]
                 ]
               },
@@ -9294,20 +10221,7 @@
                   ],
                   [
                     555.34,
-                    212.78
-                  ]
-                ]
-              },
-              {
-                "closed": false,
-                "points": [
-                  [
-                    555.44,
-                    210.94
-                  ],
-                  [
-                    445.47,
-                    210.94
+                    210.58
                   ]
                 ]
               },
@@ -9472,7 +10386,7 @@
                 "points": [
                   [
                     472.15,
-                    191.8
+                    191.87
                   ],
                   [
                     472.15,
@@ -9515,7 +10429,7 @@
                   ],
                   [
                     448.37,
-                    210.93
+                    210.58
                   ]
                 ]
               },
@@ -9528,7 +10442,7 @@
                   ],
                   [
                     458.01,
-                    210.94
+                    210.58
                   ]
                 ]
               },
@@ -9563,7 +10477,7 @@
                 "points": [
                   [
                     542.19,
-                    210.89
+                    210.58
                   ],
                   [
                     542.19,
@@ -9593,7 +10507,7 @@
                   ],
                   [
                     520.18,
-                    210.89
+                    210.58
                   ]
                 ]
               },
@@ -9602,7 +10516,7 @@
                 "points": [
                   [
                     542.66,
-                    210.89
+                    210.58
                   ],
                   [
                     542.66,
@@ -9632,7 +10546,7 @@
                   ],
                   [
                     519.74,
-                    210.92
+                    210.58
                   ]
                 ]
               },
@@ -10385,7 +11299,7 @@
                   ],
                   [
                     546.77,
-                    210.97
+                    210.58
                   ]
                 ]
               }
@@ -11062,14 +11976,39 @@
                 "y1": 152.43,
                 "x2": 362.82,
                 "y2": 152.43
+              },
+              {
+                "x1": 436.23,
+                "y1": 210.58,
+                "x2": 530.62,
+                "y2": 210.58
+              },
+              {
+                "x1": 532.78,
+                "y1": 210.58,
+                "x2": 555.34,
+                "y2": 210.58
+              },
+              {
+                "x1": 472.15,
+                "y1": 191.87,
+                "x2": 472.15,
+                "y2": 188.68
+              },
+              {
+                "x1": 475.98,
+                "y1": 191.87,
+                "x2": 475.98,
+                "y2": 188.68
+              },
+              {
+                "x1": 336.98,
+                "y1": 202.88,
+                "x2": 342.13,
+                "y2": 202.88
               }
             ],
             "texts": [
-              {
-                "x": 360.13,
-                "y": 161.39,
-                "text": "Переpхiд в 5 корпус"
-              },
               {
                 "x": 360.66,
                 "y": 167.36,
@@ -13517,11 +14456,6 @@
                 "x": 64.63,
                 "y": 59.4,
                 "text": "5125"
-              },
-              {
-                "x": 84.39,
-                "y": 70.68,
-                "text": "ПЕРЕХIД В КОРПУС 2"
               }
             ]
           }

@@ -5,9 +5,10 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class NavGraph(
+data class InDoorNavGraph(
     @SerialName("edges")
     val edges: List<Edge>,
     @SerialName("nodes")
-    val nodes: List<Node>
+    val nodes: List<InDoorNode>
 )
+

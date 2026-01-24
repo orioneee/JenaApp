@@ -6,9 +6,8 @@ import com.oriooneee.jet.navigation.NavigationEngine
 import com.oriooneee.jet.navigation.domain.entities.NavigationDirection
 import com.oriooneee.jet.navigation.domain.entities.NavigationStep
 import com.oriooneee.jet.navigation.domain.entities.graph.MasterNavigation
-import com.oriooneee.jet.navigation.domain.entities.graph.Node
+import com.oriooneee.jet.navigation.domain.entities.graph.InDoorNode
 import com.oriooneee.jet.navigation.domain.entities.graph.SelectNodeResult
-import jetnavigation.jetnavigation.generated.resources.Res
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,8 +19,8 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 
 data class NavigationUiState(
-    val startNode: Node? = null,
-    val endNode: Node? = null,
+    val startNode: InDoorNode? = null,
+    val endNode: InDoorNode? = null,
     val navigationSteps: List<NavigationStep> = emptyList(),
     val currentStepIndex: Int = 0,
     val routeStats: NavigationDirection? = null,
