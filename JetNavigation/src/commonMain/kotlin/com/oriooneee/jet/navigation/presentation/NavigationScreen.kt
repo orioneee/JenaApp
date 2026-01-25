@@ -5,6 +5,7 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -48,7 +49,6 @@ import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.outlined.Apartment
-import androidx.compose.material.icons.outlined.DirectionsRun
 import androidx.compose.material.icons.outlined.NaturePeople
 import androidx.compose.material.icons.outlined.Park
 import androidx.compose.material.icons.outlined.WbSunny
@@ -77,6 +77,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.CornerRadius
@@ -329,9 +330,29 @@ fun NavigationScreen(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        if (uiState.currentStep != null) {
+                        val currentStep = uiState.currentStep
+                        val activeMapData = currentStep as? NavigationStep.ByFlor
+
+                        ZoomableMapCanvas(
+                            renderData = activeMapData?.image,
+                            initFocusPoint = activeMapData?.pointOfInterest ?: Offset.Zero,
+                            planColor = planColor,
+                            labelColor = planLabelColor,
+                            routeColor = routeColor,
+                            startNodeColor = startNodeColor,
+                            endNodeColor = endNodeColor,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .alpha(if (activeMapData != null) 1f else 0f)
+                        )
+
+                        if (currentStep != null) {
+                            MapComponent(
+                                step = currentStep as? NavigationStep.OutDoorMaps,
+                                isDarkTheme = isDarkTheme
+                            )
                             AnimatedContent(
-                                targetState = uiState.currentStep!!,
+                                targetState = currentStep,
                                 transitionSpec = {
                                     fadeIn(tween(400)) + scaleIn(initialScale = 0.95f) togetherWith
                                             fadeOut(tween(400))
@@ -341,15 +362,6 @@ fun NavigationScreen(
                                 when (step) {
                                     is NavigationStep.ByFlor -> {
                                         Box(modifier = Modifier.fillMaxSize()) {
-                                            ZoomableMapCanvas(
-                                                renderData = step.image,
-                                                initFocusPoint = step.pointOfInterest,
-                                                planColor = planColor,
-                                                labelColor = planLabelColor,
-                                                routeColor = routeColor,
-                                                startNodeColor = startNodeColor,
-                                                endNodeColor = endNodeColor
-                                            )
                                             FloorAndBuildingBadge(
                                                 floorNumber = step.flor,
                                                 buildingNumber = step.building,
@@ -375,7 +387,12 @@ fun NavigationScreen(
                                     }
 
                                     is NavigationStep.OutDoorMaps -> {
-                                        MapComponent(step = step, isDarkTheme = isDarkTheme)
+                                        Box(
+                                            modifier = Modifier.fillMaxSize()
+                                        ){
+
+                                        }
+
                                     }
                                     is NavigationStep.TransitionToInDoor -> {
                                         TransitionToInDoorScreen(toBuilding = step.toBuilding)
@@ -1034,14 +1051,20 @@ data class RenderedLabel(
 
 @Composable
 fun ZoomableMapCanvas(
-    renderData: FloorRenderData,
+    renderData: FloorRenderData?,
     initFocusPoint: Offset,
     planColor: Color,
     labelColor: Color,
     routeColor: Color,
     startNodeColor: Color,
-    endNodeColor: Color
+    endNodeColor: Color,
+    modifier: Modifier = Modifier
 ) {
+    if (renderData == null) {
+        Box(modifier = modifier)
+        return
+    }
+
     val zoomState = rememberZoomState()
     val textMeasurer = rememberTextMeasurer()
     val contentSize = remember(renderData) { Size(renderData.width, renderData.height) }
@@ -1107,7 +1130,7 @@ fun ZoomableMapCanvas(
         }
     }
 
-    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+    BoxWithConstraints(modifier = modifier) {
         val containerSize = Size(
             with(density) { maxWidth.toPx() },
             with(density) { maxHeight.toPx() }

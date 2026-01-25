@@ -22,7 +22,7 @@ import com.oriooneee.jet.navigation.domain.entities.NavigationStep
 @Composable
 expect fun MapComponent(
     modifier: Modifier = Modifier,
-    step: NavigationStep.OutDoorMaps,
+    step: NavigationStep.OutDoorMaps?,
     isDarkTheme: Boolean
 )
 
