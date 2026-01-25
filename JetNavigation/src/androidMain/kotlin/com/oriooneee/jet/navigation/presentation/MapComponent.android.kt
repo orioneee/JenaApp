@@ -95,7 +95,6 @@ actual fun MapComponent(
             emptyList()
         }
     }
-
     MapboxMap(
         modifier = modifier,
         mapState = mapState,

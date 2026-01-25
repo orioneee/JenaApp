@@ -25,21 +25,19 @@ fun getMapboxHtml(
     pathPoints: String,
     isDarkTheme: Boolean
 ): String {
-    // Выбираем стиль в зависимости от темы приложения
-    val styleUrl = if (isDarkTheme) "mapbox://styles/mapbox/dark-v11" else "mapbox://styles/mapbox/streets-v12"
-
     val googleBlue = "#4285F4"
     val routeBorderColor = "#1558B0"
     val whiteColor = "#FFFFFF"
 
+    val lightPreset = if (isDarkTheme) "night" else "day"
     return """
         <!DOCTYPE html>
         <html>
         <head>
             <meta charset="utf-8">
             <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
-            <link href="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.css" rel="stylesheet">
-            <script src="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.js"></script>
+            <link href="https://api.mapbox.com/mapbox-gl-js/v3.9.4/mapbox-gl.css" rel="stylesheet">
+            <script src="https://api.mapbox.com/mapbox-gl-js/v3.9.4/mapbox-gl.js"></script>
             <style>
                 body { margin: 0; padding: 0; }
                 #map { position: absolute; top: 0; bottom: 0; width: 100%; }
@@ -56,17 +54,31 @@ fun getMapboxHtml(
 
                 const map = new mapboxgl.Map({
                     container: 'map',
-                    style: '$styleUrl', // ИСПОЛЬЗУЕМ КЛАССИЧЕСКИЙ СТИЛЬ
+                    style: 'mapbox://styles/mapbox/standard',
                     center: center,
                     zoom: 15,
                     bearing: 18.5,
                     pitch: 0,
-                    dragRotate: false
+                    dragRotate: false,
+                    projection: 'mercator',
+                    // Конфигурация при инициализации (работает лучше в новых версиях)
+                    config: {
+                        basemap: {
+                            lightPreset: '$lightPreset',
+                            theme: 'monochrome'
+                        }
+                    }
                 });
 
                 map.on('style.load', () => {
-                    // УБРАЛИ setConfigProperty, так как они не нужны для streets-v12
-                    
+                    // Явная установка свойств для гарантии применения темы
+                    try {
+                        map.setConfigProperty('basemap', 'lightPreset', '$lightPreset');
+                        map.setConfigProperty('basemap', 'theme', 'monochrome');
+                    } catch (e) {
+                        console.error("Config error:", e);
+                    }
+
                     if (coordinates.length >= 2) {
                         map.addSource('route', {
                             'type': 'geojson',
@@ -76,17 +88,17 @@ fun getMapboxHtml(
                             }
                         });
                         
-                        // ... (остальной код добавления слоев и маркеров без изменений) ...
-                        
+                        // СЛОТЫ: В Standard стиле лучше использовать слоты, чтобы линии были под метками, но над картой
                         map.addLayer({
                             'id': 'route-outline',
                             'type': 'line',
                             'source': 'route',
+                            'slot': 'middle', 
                             'layout': { 'line-join': 'round', 'line-cap': 'round' },
                             'paint': {
                                 'line-color': '$routeBorderColor',
-                                'line-width': 10,
-                                'line-emissive-strength': 1.0
+                                'line-width': 8,
+                                'line-emissive-strength': 1
                             }
                         });
 
@@ -94,11 +106,12 @@ fun getMapboxHtml(
                             'id': 'route-main',
                             'type': 'line',
                             'source': 'route',
+                            'slot': 'middle',
                             'layout': { 'line-join': 'round', 'line-cap': 'round' },
                             'paint': {
                                 'line-color': '$googleBlue',
                                 'line-width': 8,
-                                'line-emissive-strength': 1.0
+                                'line-emissive-strength': 1
                             }
                         });
 
