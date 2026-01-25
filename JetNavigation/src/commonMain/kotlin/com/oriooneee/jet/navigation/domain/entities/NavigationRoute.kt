@@ -26,7 +26,11 @@ sealed class NavigationStep {
         val fromBuilding: Int
     ): NavigationStep()
     data class OutDoorMaps(
-        val path: List<Coordinates>
+        val path: List<Coordinates>,
+        val fromBuilding: Int? = null,
+        val toBuilding: Int? = null,
+        val fromDescription: String? = null,
+        val toDescription: String? = null
     ): NavigationStep()
     data class TransitionToInDoor(
         val toBuilding: Int

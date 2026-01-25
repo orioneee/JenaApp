@@ -477,10 +477,37 @@ class NavigationEngine(private val masterNav: MasterNavigation) {
                     }
                 }
             } else if (firstNode is ResolvedNode.OutDoor) {
-                val coords = segment.mapNotNull { (it as? ResolvedNode.OutDoor)?.node }.map {
-                    Coordinates(it.lat, it.lon)
+                val outdoorNodes = segment.mapNotNull { (it as? ResolvedNode.OutDoor)?.node }
+                val coords = outdoorNodes.map { Coordinates(it.lat, it.lon) }
+
+                val prevSegment = segments.getOrNull(i - 1)
+                val nextSegment = segments.getOrNull(i + 1)
+
+                val fromBuilding = (prevSegment?.lastOrNull() as? ResolvedNode.InDoor)?.node?.buildNum
+                val toBuilding = (nextSegment?.firstOrNull() as? ResolvedNode.InDoor)?.node?.buildNum
+
+                val lastOutdoorNode = outdoorNodes.lastOrNull()
+                val isLastSegment = i == segments.lastIndex
+                val destinationLabel = if (isLastSegment) {
+                    (globalEnd as? ResolvedNode.OutDoor)?.node?.label
+                } else {
+                    lastOutdoorNode?.label
                 }
-                steps.add(NavigationStep.OutDoorMaps(coords))
+
+                val fromDescription = fromBuilding?.let { "Exit building $it" }
+                val toDescription = when {
+                    destinationLabel != null -> "Go to $destinationLabel"
+                    toBuilding != null -> "Go to entrance of building $toBuilding"
+                    else -> null
+                }
+
+                steps.add(NavigationStep.OutDoorMaps(
+                    path = coords,
+                    fromBuilding = fromBuilding,
+                    toBuilding = toBuilding,
+                    fromDescription = fromDescription,
+                    toDescription = toDescription
+                ))
             }
         }
 

@@ -47,7 +47,6 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
 
-            implementation(libs.androidx.startup.runtime)
         }
 
         commonTest.dependencies {
@@ -59,6 +58,7 @@ kotlin {
             implementation(libs.ktor.client.okhttp)
             implementation(libs.android.ndk27)
             implementation(libs.maps.compose.ndk27)
+            implementation(libs.androidx.startup.runtime)
 
 
         }

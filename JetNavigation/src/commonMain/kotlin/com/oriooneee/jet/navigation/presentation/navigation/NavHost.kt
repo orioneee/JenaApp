@@ -6,12 +6,9 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
@@ -22,7 +19,6 @@ import androidx.navigation.toRoute
 import com.oriooneee.jet.navigation.koin.IsolatedContext
 import com.oriooneee.jet.navigation.koin.initializeIfCan
 import com.oriooneee.jet.navigation.presentation.NavigationScreen
-import com.oriooneee.jet.navigation.presentation.NavigationViewModel
 import com.oriooneee.jet.navigation.presentation.selectdestination.SelectDestinationScreen
 import org.koin.compose.KoinIsolatedContext
 
@@ -34,9 +30,7 @@ val LocalNavController = staticCompositionLocalOf<NavController> {
 fun NavigationApp(
     isDarkTheme: Boolean
 ) {
-    LaunchedEffect(Unit) {
-        initializeIfCan()
-    }
+    initializeIfCan()
     KoinIsolatedContext(IsolatedContext.koinApp) {
         val navController = rememberNavController()
         CompositionLocalProvider(
