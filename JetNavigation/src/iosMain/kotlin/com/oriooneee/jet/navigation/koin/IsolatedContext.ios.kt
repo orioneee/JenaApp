@@ -6,7 +6,7 @@ internal actual fun initializeIfCan(){
     IsolatedContext.initializeIfNeeded(
         koinApplication {
             modules(
-                ViewModelModule.module
+                AppModule.module
             )
         }
     )

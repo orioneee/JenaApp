@@ -10,7 +10,7 @@ internal class KoinInitializer : Initializer<KoinApplication> {
     override fun create(context: Context): KoinApplication {
         val koinApplication = koinApplication {
             androidContext(context.applicationContext)
-            modules(ViewModelModule.module)
+            modules(AppModule.module)
         }
         IsolatedContext.initializeIfNeeded(koinApplication)
         return koinApplication

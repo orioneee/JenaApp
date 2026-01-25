@@ -4,10 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.oriooneee.jet.navigation.NavigationEngine
 import com.oriooneee.jet.navigation.ResolvedNode
+import com.oriooneee.jet.navigation.data.NavigationRemoteRepository
 import com.oriooneee.jet.navigation.domain.entities.NavigationDirection
 import com.oriooneee.jet.navigation.domain.entities.NavigationStep
 import com.oriooneee.jet.navigation.domain.entities.graph.InDoorNode
-import com.oriooneee.jet.navigation.domain.entities.graph.MasterNavigation
 import com.oriooneee.jet.navigation.domain.entities.graph.SelectNodeResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -41,7 +41,9 @@ data class NavigationUiState(
         get() = (endNode as? ResolvedNode.InDoor)?.node
 }
 
-class NavigationViewModel : ViewModel() {
+class NavigationViewModel(
+    private val remoteRepository: NavigationRemoteRepository,
+): ViewModel() {
 
     private val _uiState = MutableStateFlow(NavigationUiState())
     val uiState = _uiState.asStateFlow()
@@ -58,7 +60,7 @@ class NavigationViewModel : ViewModel() {
             _uiState.update { it.copy(isLoading = true) }
 
             try {
-                val engine = NavigationEngine(MasterNavigation.loadFromAssets())
+                val engine = remoteRepository.getMainNavigation().getOrNull()?.let { NavigationEngine(it) }
                 navigationEngine.value = engine
                 _uiState.update {
                     it.copy(
@@ -131,18 +133,48 @@ class NavigationViewModel : ViewModel() {
         val currentStart = uiState.value.startNode
         val currentEnd = uiState.value.endNode
 
-        _uiState.update {
-            it.copy(
-                startNode = currentEnd,
-                endNode = currentStart,
-                navigationSteps = emptyList(),
-                routeStats = null,
-                availableRoutes = emptyList(),
-                currentStepIndex = 0
-            )
-        }
         if (currentStart != null && currentEnd != null) {
-            calculateRoute()
+            viewModelScope.launch(Dispatchers.Default) {
+                _uiState.update { it.copy(isLoading = true) }
+
+                try {
+                    val engine = navigationEngine.value ?: return@launch
+                    val routes = engine.getRoute(from = currentEnd, to = currentStart)
+
+                    withContext(Dispatchers.Main) {
+                        if (routes.isNotEmpty()) {
+                            val bestRoute = routes.first()
+                            _uiState.update {
+                                it.copy(
+                                    startNode = currentEnd,
+                                    endNode = currentStart,
+                                    navigationSteps = bestRoute.steps,
+                                    routeStats = bestRoute,
+                                    availableRoutes = routes,
+                                    currentStepIndex = 0,
+                                    isLoading = false,
+                                    error = null
+                                )
+                            }
+                        } else {
+                            _uiState.update {
+                                it.copy(
+                                    startNode = currentEnd,
+                                    endNode = currentStart,
+                                    navigationSteps = emptyList(),
+                                    routeStats = null,
+                                    availableRoutes = emptyList(),
+                                    currentStepIndex = 0,
+                                    isLoading = false,
+                                    error = "No route found"
+                                )
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    _uiState.update { it.copy(isLoading = false, error = e.message) }
+                }
+            }
         }
     }
 

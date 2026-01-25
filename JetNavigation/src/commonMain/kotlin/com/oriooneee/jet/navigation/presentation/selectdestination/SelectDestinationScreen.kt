@@ -31,7 +31,6 @@ import androidx.compose.material.icons.outlined.Class
 import androidx.compose.material.icons.outlined.DirectionsWalk
 import androidx.compose.material.icons.outlined.ExitToApp
 import androidx.compose.material.icons.outlined.Man
-import androidx.compose.material.icons.outlined.Park
 import androidx.compose.material.icons.outlined.Place
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material.icons.outlined.Wc
@@ -69,7 +68,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.isSystemInDarkTheme
+import com.oriooneee.jet.navigation.data.NavigationRemoteRepository
 import com.oriooneee.jet.navigation.domain.entities.graph.InDoorNode
 import com.oriooneee.jet.navigation.domain.entities.graph.MasterNavigation
 import com.oriooneee.jet.navigation.domain.entities.graph.NavNode
@@ -81,6 +80,7 @@ import com.oriooneee.jet.navigation.presentation.KEY_SELECTED_START_NODE
 import com.oriooneee.jet.navigation.presentation.navigation.LocalNavController
 import com.oriooneee.jet.navigation.utils.containsAny
 import kotlinx.serialization.json.Json
+import org.koin.compose.koinInject
 
 val enterColor = Color(0xFF4CAF50).copy(alpha = 0.35f)
 
@@ -94,13 +94,14 @@ fun SelectDestinationScreen(
 ) {
     val navController = LocalNavController.current
     var masterNavigation by remember { mutableStateOf<MasterNavigation?>(null) }
+    val navigationRemoteRepository: NavigationRemoteRepository = koinInject()
     var searchQuery by remember { mutableStateOf("") }
 
     var selectedBuilding by remember { mutableStateOf<Int?>(null) }
     var selectedFloor by remember { mutableStateOf<Int?>(null) }
 
     LaunchedEffect(Unit) {
-        masterNavigation = MasterNavigation.loadFromAssets()
+        masterNavigation = navigationRemoteRepository.getMainNavigation().getOrNull()
     }
 
     fun handleSelection(result: SelectNodeResult) {

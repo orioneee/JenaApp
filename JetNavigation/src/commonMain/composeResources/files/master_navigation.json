@@ -6638,22 +6638,6 @@
   "outDoor": {
     "nodes": [
       {
-        "id": "MAIN_ENETRACE_GUK",
-        "lon": 28.41227,
-        "lat": 49.233915,
-        "type": [],
-        "label": "Головний вхід ГУК"
-      },
-      {
-        "id": "POI_PE",
-        "lon": 28.411117,
-        "lat": 49.2318,
-        "type": [
-          "POI"
-        ],
-        "label": "Вхід Стадіон"
-      },
-      {
         "id": "OUTDOOR_MAIN_ENTERANCE_5",
         "lon": 28.409398,
         "lat": 49.233289,
@@ -6682,6 +6666,52 @@
         ],
         "label": "Вхід до корпусу 2",
         "buildNum": "2"
+      },
+      {
+        "id": "OUTDOOR_MAIN_ENTERANCE_7",
+        "lon": 28.410387,
+        "lat": 49.233027,
+        "type": [
+          "MAIN_ENTRANCE"
+        ],
+        "label": "Вхід до корпусу 7",
+        "buildNum": "7"
+      },
+      {
+        "id": "OUTDOOR_MAIN_ENTERANCE_3",
+        "lon": 28.407127,
+        "lat": 49.230067,
+        "type": [
+          "MAIN_ENTRANCE"
+        ],
+        "label": "Вхід до корпусу 3",
+        "buildNum": "3"
+      },
+      {
+        "id": "OUTDOOR_MAIN_ENTERANCE_4",
+        "lon": 28.406564,
+        "lat": 49.228853,
+        "type": [
+          "MAIN_ENTRANCE"
+        ],
+        "label": "Вхід до корпусу 4",
+        "buildNum": "4"
+      },
+      {
+        "id": "MAIN_ENETRACE_GUK",
+        "lon": 28.41227,
+        "lat": 49.233915,
+        "type": [],
+        "label": "Головний вхід ГУК"
+      },
+      {
+        "id": "POI_PE",
+        "lon": 28.411117,
+        "lat": 49.2318,
+        "type": [
+          "POI"
+        ],
+        "label": "Вхід Стадіон"
       },
       {
         "id": "POI_BIGMAN",
@@ -6727,36 +6757,6 @@
           "POI"
         ],
         "label": "Трамвайна зупинка"
-      },
-      {
-        "id": "OUTDOOR_MAIN_ENTERANCE_7",
-        "lon": 28.410387,
-        "lat": 49.233027,
-        "type": [
-          "MAIN_ENTRANCE"
-        ],
-        "label": "Вхід до корпусу 7",
-        "buildNum": "7"
-      },
-      {
-        "id": "OUTDOOR_MAIN_ENTERANCE_3",
-        "lon": 28.407127,
-        "lat": 49.230067,
-        "type": [
-          "MAIN_ENTRANCE"
-        ],
-        "label": "Вхід до корпусу 3",
-        "buildNum": "3"
-      },
-      {
-        "id": "OUTDOOR_MAIN_ENTERANCE_4",
-        "lon": 28.406564,
-        "lat": 49.228853,
-        "type": [
-          "MAIN_ENTRANCE"
-        ],
-        "label": "Вхід до корпусу 4",
-        "buildNum": "4"
       },
       {
         "id": "POI_ARKA",
@@ -6970,11 +6970,6 @@
         "id": "TURN_OUTDOOR_39",
         "lon": 28.412127,
         "lat": 49.233817
-      },
-      {
-        "id": "TURN_OUTDOOR_40",
-        "lon": 28.412127,
-        "lat": 49.233816
       },
       {
         "id": "TURN_OUTDOOR_41",
@@ -7259,7 +7254,7 @@
         "weight": 11.54
       },
       {
-        "from": "TURN_OUTDOOR_40",
+        "from": "TURN_OUTDOOR_39",
         "to": "TURN_OUTDOOR_4",
         "weight": 63.94
       },
@@ -7555,7 +7550,7 @@
       },
       {
         "from": "TURN_OUTDOOR_71",
-        "to": "TURN_OUTDOOR_40",
+        "to": "TURN_OUTDOOR_39",
         "weight": 14.65
       },
       {
@@ -7782,11 +7777,6 @@
         "from": "TURN_OUTDOOR_87",
         "to": "TURN_OUTDOOR_34",
         "weight": 2.44
-      },
-      {
-        "from": "OUTDOOR_MAIN_ENTERANCE_2",
-        "to": "TURN_OUTDOOR_40",
-        "weight": 11.43
       }
     ]
   },
