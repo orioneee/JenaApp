@@ -397,6 +397,7 @@ class NavigationEngine(private val masterNav: MasterNavigation) {
             val firstNode = segment.first()
             val indoorNodes = segment.mapNotNull { (it as? ResolvedNode.InDoor)?.node }
             val isSingleIndoorPoint = firstNode is ResolvedNode.InDoor && indoorNodes.size <= 1
+            val isLastSegment = i == segments.lastIndex
 
             if (i > 0) {
                 val prevSegment = segments[i - 1]
@@ -410,21 +411,29 @@ class NavigationEngine(private val masterNav: MasterNavigation) {
                         steps.add(NavigationStep.TransitionToOutDoor(fromBuilding = prevLast.node.buildNum))
                     }
                 } else if (prevLast is ResolvedNode.OutDoor && firstNode is ResolvedNode.InDoor) {
-                    val skipTransition = (i == segments.lastIndex && isSingleIndoorPoint)
+                    val skipTransition = (isLastSegment && isSingleIndoorPoint)
                     if (!skipTransition) {
                         steps.add(NavigationStep.TransitionToInDoor(toBuilding = firstNode.node.buildNum))
                     }
                 } else if (prevLast is ResolvedNode.InDoor && firstNode is ResolvedNode.InDoor) {
-                    if (prevLast.node.buildNum != firstNode.node.buildNum) {
-                        steps.add(NavigationStep.TransitionToBuilding(
-                            prevLast.node.buildNum,
-                            firstNode.node.buildNum
-                        ))
-                    } else if (prevLast.node.floorNum != firstNode.node.floorNum) {
-                        steps.add(NavigationStep.TransitionToFlor(
-                            firstNode.node.floorNum,
-                            prevLast.node.floorNum
-                        ))
+                    val prevIndoorCount = prevSegment.count { it is ResolvedNode.InDoor }
+                    val isPrevStartSingle = (i - 1 == 0) && prevIndoorCount <= 1
+
+                    if (!isPrevStartSingle) {
+                        if (prevLast.node.buildNum != firstNode.node.buildNum) {
+                            steps.add(NavigationStep.TransitionToBuilding(
+                                prevLast.node.buildNum,
+                                firstNode.node.buildNum
+                            ))
+                        } else if (prevLast.node.floorNum != firstNode.node.floorNum) {
+                            val skipTransitionToLastSingle = isLastSegment && isSingleIndoorPoint
+                            if (!skipTransitionToLastSingle) {
+                                steps.add(NavigationStep.TransitionToFlor(
+                                    firstNode.node.floorNum,
+                                    prevLast.node.floorNum
+                                ))
+                            }
+                        }
                     }
                 }
             }
@@ -435,11 +444,15 @@ class NavigationEngine(private val masterNav: MasterNavigation) {
 
                 val nextIsOutdoor = (i + 1 < segments.size) && (segments[i + 1].first() is ResolvedNode.OutDoor)
                 val prevIsOutdoor = (i - 1 >= 0) && (segments[i - 1].last() is ResolvedNode.OutDoor)
+                val nextIsIndoor = (i + 1 < segments.size) && (segments[i + 1].first() is ResolvedNode.InDoor)
+                val prevIsIndoor = (i - 1 >= 0) && (segments[i - 1].last() is ResolvedNode.InDoor)
 
-                val skipStart = isStartSegment && isSingleIndoorPoint && nextIsOutdoor
-                val skipEnd = isEndSegment && isSingleIndoorPoint && prevIsOutdoor
+                val skipStartOutdoor = isStartSegment && isSingleIndoorPoint && nextIsOutdoor
+                val skipStartIndoor = isStartSegment && isSingleIndoorPoint && nextIsIndoor
+                val skipEnd = isEndSegment && isSingleIndoorPoint
+                val skipIntermediate = !isStartSegment && !isEndSegment && isSingleIndoorPoint && prevIsIndoor && nextIsIndoor
 
-                if (!skipStart && !skipEnd) {
+                if (!skipStartOutdoor && !skipStartIndoor && !skipEnd && !skipIntermediate) {
                     val buildingId = firstNode.node.buildNum
                     val floorNum = firstNode.node.floorNum
 

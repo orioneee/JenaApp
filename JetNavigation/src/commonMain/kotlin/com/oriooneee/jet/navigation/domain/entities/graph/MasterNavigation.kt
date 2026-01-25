@@ -39,11 +39,16 @@ data class MasterNavigation(
                 val audsCount = it.inDoorNavGraph.nodes
                     .count { node -> node.type.contains(NodeType.AUDITORIUM) }
                 val outDoorEdgesCount = it.outDoorNavGraph.edges.size
+                val inDoorEdgesCount = it.inDoorNavGraph.edges.size
+                val totalNodes = it.inDoorNavGraph.nodes.size + it.outDoorNavGraph.nodes.size
+                val totalEdges = it.inDoorNavGraph.edges.size + it.outDoorNavGraph.edges.size
 
                 println(
                     "Loaded MasterNavigation with " +
                             "${it.buildings.size} buildings and $audsCount auditoriums " +
-                            "and $outDoorEdgesCount outdoor edges."
+                            "($outDoorEdgesCount outdoor edges), " +
+                            "($inDoorEdgesCount indoor edges), " +
+                            "total $totalNodes nodes and $totalEdges edges."
                 )
             }
         }
