@@ -10,6 +10,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
@@ -18,9 +19,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.oriooneee.jet.navigation.koin.IsolatedContext
+import com.oriooneee.jet.navigation.koin.initializeIfCan
 import com.oriooneee.jet.navigation.presentation.NavigationScreen
 import com.oriooneee.jet.navigation.presentation.NavigationViewModel
 import com.oriooneee.jet.navigation.presentation.selectdestination.SelectDestinationScreen
+import org.koin.compose.KoinIsolatedContext
 
 val LocalNavController = staticCompositionLocalOf<NavController> {
     error("No NavController provided")
@@ -30,11 +34,14 @@ val LocalNavController = staticCompositionLocalOf<NavController> {
 fun NavigationApp(
     isDarkTheme: Boolean
 ) {
-    val navController = rememberNavController()
-    val vm: NavigationViewModel = remember { NavigationViewModel() }
-    CompositionLocalProvider(
-        LocalNavController provides navController
-    ) {
+    LaunchedEffect(Unit) {
+        initializeIfCan()
+    }
+    KoinIsolatedContext(IsolatedContext.koinApp) {
+        val navController = rememberNavController()
+        CompositionLocalProvider(
+            LocalNavController provides navController
+        ) {
 
             NavHost(
                 navController = navController,
@@ -48,7 +55,7 @@ fun NavigationApp(
                         fadeIn(animationSpec = tween(300))
                     }
                 ) {
-                    NavigationScreen(vm, isDarkTheme)
+                    NavigationScreen(isDarkTheme)
                 }
 
                 composable<Route.SelectDestination>(
@@ -80,10 +87,12 @@ fun NavigationApp(
                                 navController.popBackStack()
                             },
                             isSelectedStartNode = route.isSelectedStartNode,
-                            isStartNode = isStartNode
+                            isStartNode = isStartNode,
+                            isDarkTheme = isDarkTheme
                         )
                     }
                 }
             }
+        }
     }
 }

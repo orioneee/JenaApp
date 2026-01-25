@@ -41,7 +41,13 @@ kotlin {
             implementation(libs.kotlinx.serialization.core)
             implementation(libs.navigation.compose)
 
+            implementation(libs.koin.core)
+            implementation(libs.koin.compose)
+            implementation(libs.koin.core)
+            implementation(libs.koin.compose)
+            implementation(libs.koin.compose.viewmodel)
 
+            implementation(libs.androidx.startup.runtime)
         }
 
         commonTest.dependencies {

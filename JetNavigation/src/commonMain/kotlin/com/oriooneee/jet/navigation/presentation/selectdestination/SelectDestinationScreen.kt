@@ -69,6 +69,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.isSystemInDarkTheme
 import com.oriooneee.jet.navigation.domain.entities.graph.InDoorNode
 import com.oriooneee.jet.navigation.domain.entities.graph.MasterNavigation
 import com.oriooneee.jet.navigation.domain.entities.graph.NavNode
@@ -86,6 +87,7 @@ val enterColor = Color(0xFF4CAF50).copy(alpha = 0.35f)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun SelectDestinationScreen(
+    isDarkTheme: Boolean,
     isStartNode: Boolean,
     isSelectedStartNode: Boolean,
     onBack: () -> Unit
@@ -410,11 +412,16 @@ fun SelectDestinationScreen(
 
                     if (outDoorPoiNodes.isNotEmpty() && selectedBuilding == null) {
                         item(span = { GridItemSpan(maxLineSpan) }) {
+                            val outdoorTitleColor = if (isDarkTheme) Color(0xFF81C784) else Color(0xFF2E7D32)
+                            val outdoorContainerColor = if (isDarkTheme) Color(0xFF2E7D32).copy(alpha = 0.4f) else Color(0xFF81C784).copy(alpha = 0.3f)
+                            val outdoorLabelColor = if (isDarkTheme) Color(0xFFA5D6A7) else Color(0xFF1B5E20)
+                            val outdoorIconColor = if (isDarkTheme) Color(0xFF81C784) else Color(0xFF2E7D32)
+
                             Column {
                                 Text(
                                     text = "Campus Outdoor",
                                     style = MaterialTheme.typography.labelLarge,
-                                    color = Color(0xFF2E7D32),
+                                    color = outdoorTitleColor,
                                     modifier = Modifier.padding(bottom = 8.dp, start = 4.dp)
                                 )
                                 FlowRow(
@@ -431,9 +438,9 @@ fun SelectDestinationScreen(
                                             },
                                             label = { Text(node.label ?: node.id) },
                                             colors = SuggestionChipDefaults.suggestionChipColors(
-                                                containerColor = Color(0xFF81C784).copy(alpha = 0.3f),
-                                                labelColor = Color(0xFF1B5E20),
-                                                iconContentColor = Color(0xFF2E7D32)
+                                                containerColor = outdoorContainerColor,
+                                                labelColor = outdoorLabelColor,
+                                                iconContentColor = outdoorIconColor
                                             ),
                                             border = SuggestionChipDefaults.suggestionChipBorder(
                                                 enabled = true,
@@ -473,7 +480,7 @@ fun SelectDestinationScreen(
                                             },
                                             label = {
                                                 Text(
-                                                    "${info.label ?: info.id} (${info.buildNum} Корпус, ${info.floorNum} Поверх)"
+                                                    "${info.label ?: info.id} (${info.buildNum} к. ${info.floorNum} п.)"
                                                 )
                                             },
                                             icon = {

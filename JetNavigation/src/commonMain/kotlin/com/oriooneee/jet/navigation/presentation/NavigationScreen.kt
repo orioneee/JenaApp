@@ -114,6 +114,7 @@ import com.oriooneee.jet.navigation.presentation.navigation.LocalNavController
 import com.oriooneee.jet.navigation.presentation.navigation.Route
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun rememberZoomState(minScale: Float = 0.1f, maxScale: Float = 10f) =
@@ -259,9 +260,9 @@ fun getRoutePresentation(route: NavigationDirection, isFastest: Boolean): RouteP
 )
 @Composable
 fun NavigationScreen(
-    viewModel: NavigationViewModel,
-    isDarkTheme: Boolean
-) {
+    isDarkTheme: Boolean,
+    viewModel: NavigationViewModel = koinViewModel(),
+    ) {
     val uiState by viewModel.uiState.collectAsState()
 
     val planColor = MaterialTheme.colorScheme.onSurface
