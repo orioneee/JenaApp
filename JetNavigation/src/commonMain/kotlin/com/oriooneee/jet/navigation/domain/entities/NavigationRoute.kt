@@ -1,8 +1,8 @@
 package com.oriooneee.jet.navigation.domain.entities
 
 import androidx.compose.ui.geometry.Offset
-import com.oriooneee.jet.navigation.FloorRenderData
-import com.oriooneee.jet.navigation.TextLabel
+import com.oriooneee.jet.navigation.engine.models.FloorRenderData
+import com.oriooneee.jet.navigation.engine.models.TextLabel
 
 sealed class NavigationStep {
     data class ByFlor(

@@ -2,14 +2,14 @@ package com.oriooneee.jet.navigation.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.oriooneee.jet.navigation.NavigationEngine
-import com.oriooneee.jet.navigation.ResolvedNode
 import com.oriooneee.jet.navigation.data.NavigationRemoteRepository
 import com.oriooneee.jet.navigation.domain.entities.NavigationDirection
 import com.oriooneee.jet.navigation.domain.entities.NavigationStep
 import com.oriooneee.jet.navigation.domain.entities.graph.InDoorNode
 import com.oriooneee.jet.navigation.domain.entities.graph.MasterNavigation
 import com.oriooneee.jet.navigation.domain.entities.graph.SelectNodeResult
+import com.oriooneee.jet.navigation.engine.NavigationEngine
+import com.oriooneee.jet.navigation.engine.models.ResolvedNode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow

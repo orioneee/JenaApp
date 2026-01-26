@@ -75,9 +75,9 @@ import com.oriooneee.jet.navigation.domain.entities.graph.NavNode
 import com.oriooneee.jet.navigation.domain.entities.graph.NodeType
 import com.oriooneee.jet.navigation.domain.entities.graph.OutDoorNode
 import com.oriooneee.jet.navigation.domain.entities.graph.SelectNodeResult
-import com.oriooneee.jet.navigation.presentation.KEY_SELECTED_END_NODE
-import com.oriooneee.jet.navigation.presentation.KEY_SELECTED_START_NODE
 import com.oriooneee.jet.navigation.presentation.navigation.LocalNavController
+import com.oriooneee.jet.navigation.presentation.screen.KEY_SELECTED_END_NODE
+import com.oriooneee.jet.navigation.presentation.screen.KEY_SELECTED_START_NODE
 import com.oriooneee.jet.navigation.utils.containsAny
 import kotlinx.serialization.json.Json
 import org.koin.compose.koinInject

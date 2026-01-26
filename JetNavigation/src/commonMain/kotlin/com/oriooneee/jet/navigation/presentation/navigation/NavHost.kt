@@ -18,7 +18,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.oriooneee.jet.navigation.koin.IsolatedContext
 import com.oriooneee.jet.navigation.koin.initializeIfCan
-import com.oriooneee.jet.navigation.presentation.NavigationScreen
+import com.oriooneee.jet.navigation.presentation.screen.NavigationScreen
 import com.oriooneee.jet.navigation.presentation.selectdestination.SelectDestinationScreen
 import org.koin.compose.KoinIsolatedContext
 
