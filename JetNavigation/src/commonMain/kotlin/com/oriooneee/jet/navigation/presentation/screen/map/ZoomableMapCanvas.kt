@@ -154,7 +154,12 @@ fun ZoomableMapCanvas(
             zoomState.updateContainerSize(containerSize)
             when {
                 routeBounds != null -> {
-                    zoomState.fitToBounds(routeBounds.first, routeBounds.second, paddingFraction = 0.1f)
+                    zoomState.fitToBounds(
+                        topLeft = routeBounds.first,
+                        bottomRight = routeBounds.second,
+                        contentSize = contentSize,
+                        paddingFraction = 0.1f
+                    )
                 }
                 initFocusPoint != Offset.Zero -> {
                     zoomState.zoomToPoint(initFocusPoint, contentSize, 3f)

@@ -42,6 +42,7 @@ expect val applyMaxHeightForBottomSheet: Boolean
 fun RouteSelectionBottomSheet(
     routes: List<NavigationDirection>,
     selectedRoute: NavigationDirection?,
+    isCurrentStepMap: Boolean,
     isDarkMode: Boolean,
     maxHeightForBottomSheet: Dp,
     onRouteSelected: (NavigationDirection) -> Unit,
@@ -58,7 +59,7 @@ fun RouteSelectionBottomSheet(
         Column(
             modifier = Modifier
                 .then(
-                    if (applyMaxHeightForBottomSheet)
+                    if (applyMaxHeightForBottomSheet && isCurrentStepMap)
                         Modifier.heightIn(max = maxHeightForBottomSheet)
                     else
                         Modifier

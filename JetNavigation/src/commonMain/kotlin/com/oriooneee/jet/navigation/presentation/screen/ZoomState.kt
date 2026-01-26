@@ -58,14 +58,23 @@ class ZoomState(private val minScale: Float, private val maxScale: Float) {
 
     fun fitToBounds(
         topLeft: Offset, bottomRight: Offset,
+        contentSize: Size,
         paddingFraction: Float = 0.15f,
-        maxZoom: Float = 4f
+        maxZoomMultiplier: Float = 3f
     ) {
-        if (containerSize == Size.Zero) return
+        if (containerSize == Size.Zero || contentSize == Size.Zero) return
 
         val boundsWidth = bottomRight.x - topLeft.x
         val boundsHeight = bottomRight.y - topLeft.y
         if (boundsWidth <= 0 || boundsHeight <= 0) return
+
+        // fitScale - масштаб при котором весь план помещается на экран
+        val fitScale = minOf(
+            containerSize.width / contentSize.width,
+            containerSize.height / contentSize.height
+        )
+        // Ограничиваем зум относительно fitScale
+        val maxAllowedScale = fitScale * maxZoomMultiplier
 
         val paddingX = containerSize.width * paddingFraction
         val paddingY = containerSize.height * paddingFraction
@@ -74,7 +83,7 @@ class ZoomState(private val minScale: Float, private val maxScale: Float) {
 
         val scaleX = availableWidth / boundsWidth
         val scaleY = availableHeight / boundsHeight
-        scale = minOf(scaleX, scaleY).coerceIn(minScale, minOf(maxScale, maxZoom))
+        scale = minOf(scaleX, scaleY).coerceIn(minScale, minOf(maxScale, maxAllowedScale))
 
         val boundsCenter = Offset(
             (topLeft.x + bottomRight.x) / 2,

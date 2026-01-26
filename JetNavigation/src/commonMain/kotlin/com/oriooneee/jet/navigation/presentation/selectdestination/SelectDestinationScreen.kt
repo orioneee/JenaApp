@@ -84,6 +84,37 @@ import org.koin.compose.koinInject
 
 val enterColor = Color(0xFF4CAF50).copy(alpha = 0.35f)
 
+/**
+ * Fuzzy search: проверяет что все символы query есть в text в правильном порядке.
+ * "519" найдёт "5119", "5-1-9", "room 519" и т.д.
+ * Возвращает score (чем меньше - тем лучше совпадение), или null если не совпало.
+ */
+private fun fuzzyMatch(query: String, text: String): Int? {
+    if (query.isEmpty()) return 0
+    val queryLower = query.lowercase()
+    val textLower = text.lowercase()
+
+    // Точное совпадение - лучший score
+    if (textLower.contains(queryLower)) return 0
+
+    // Subsequence matching
+    var queryIndex = 0
+    var gaps = 0
+    var lastMatchIndex = -1
+
+    for ((textIndex, char) in textLower.withIndex()) {
+        if (queryIndex < queryLower.length && char == queryLower[queryIndex]) {
+            if (lastMatchIndex >= 0 && textIndex > lastMatchIndex + 1) {
+                gaps += textIndex - lastMatchIndex - 1
+            }
+            lastMatchIndex = textIndex
+            queryIndex++
+        }
+    }
+
+    return if (queryIndex == queryLower.length) gaps + 1 else null
+}
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun SelectDestinationScreen(
@@ -138,15 +169,23 @@ fun SelectDestinationScreen(
 
     val filteredNodes by remember(nodesInfo, selectedBuilding, selectedFloor, searchQuery) {
         derivedStateOf {
-            nodesInfo.filter { info ->
+            val query = searchQuery.trim()
+            nodesInfo.mapNotNull { info ->
                 val matchBuilding = selectedBuilding == null || info.buildNum == selectedBuilding
                 val matchFloor = selectedFloor == null || info.floorNum == selectedFloor
-                val matchSearch = searchQuery.isEmpty() ||
-                        ((info.label?.contains(searchQuery, ignoreCase = true) == true) ||
-                                info.id.contains(searchQuery, ignoreCase = true))
 
-                matchBuilding && matchFloor && matchSearch
-            }.sortedBy { info ->
+                if (!matchBuilding || !matchFloor) return@mapNotNull null
+
+                val searchScore = if (query.isEmpty()) {
+                    0
+                } else {
+                    val labelScore = info.label?.let { fuzzyMatch(query, it) }
+                    val idScore = fuzzyMatch(query, info.id)
+                    listOfNotNull(labelScore, idScore).minOrNull() ?: return@mapNotNull null
+                }
+
+                info to searchScore
+            }.sortedWith(compareBy<Pair<InDoorNode, Int>> { it.second }.thenBy { (info, _) ->
                 when {
                     info.type.contains(NodeType.MAIN_ENTRANCE) -> {
                         ((info.buildNum * 10 + info.floorNum) * 100) - 1
@@ -164,7 +203,7 @@ fun SelectDestinationScreen(
                         (info.buildNum * 10 + info.floorNum) * 100
                     }
                 }
-            }
+            }).map { it.first }
         }
     }
     val outDoorMainEnterances: List<NavNode> = masterNavigation?.outDoorNavGraph?.nodes?.filter {
@@ -196,15 +235,20 @@ fun SelectDestinationScreen(
 
     val outDoorPoiNodes by remember(masterNavigation, searchQuery) {
         derivedStateOf {
-            masterNavigation?.outDoorNavGraph?.nodes?.filter { node ->
-                node.type.contains(NodeType.POINT_OF_INTEREST) &&
-                        !node.type.contains(NodeType.TURN) &&
-                        node.label != null &&
-                        (searchQuery.isEmpty() || node.label.contains(
-                            searchQuery,
-                            ignoreCase = true
-                        ))
-            } ?: emptyList()
+            val query = searchQuery.trim()
+            masterNavigation?.outDoorNavGraph?.nodes?.mapNotNull { node ->
+                if (!node.type.contains(NodeType.POINT_OF_INTEREST) ||
+                    node.type.contains(NodeType.TURN) ||
+                    node.label == null
+                ) return@mapNotNull null
+
+                val score = if (query.isEmpty()) {
+                    0
+                } else {
+                    fuzzyMatch(query, node.label) ?: return@mapNotNull null
+                }
+                node to score
+            }?.sortedBy { it.second }?.map { it.first } ?: emptyList()
         }
     }
 

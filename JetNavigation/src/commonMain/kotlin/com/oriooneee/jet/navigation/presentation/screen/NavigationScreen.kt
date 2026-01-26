@@ -77,6 +77,7 @@ fun NavigationScreen(
     viewModel: NavigationViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val currentStep = uiState.currentStep
 
     val planColor = MaterialTheme.colorScheme.onSurface
     val planLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
@@ -148,7 +149,6 @@ fun NavigationScreen(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        val currentStep = uiState.currentStep
                         val activeMapData = currentStep as? NavigationStep.ByFlor
 
                         ZoomableMapCanvas(
@@ -336,6 +336,7 @@ fun NavigationScreen(
                     viewModel.selectRoute(route)
                     showRouteSelection = false
                 },
+                isCurrentStepMap = currentStep is NavigationStep.OutDoorMaps,
                 onDismiss = { showRouteSelection = false }
             )
         }
