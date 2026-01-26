@@ -317,7 +317,8 @@ fun NavigationScreen(
                             isExpanded = isPanelExpanded,
                             isVertical = !isLargeScreen,
                             availableRoutesCount = uiState.availableRoutes.size,
-                            onOpenRouteSelection = { showRouteSelection = true }
+                            onOpenRouteSelection = { showRouteSelection = true },
+                            isDarkMode = isDarkTheme
                         )
                     }
                 }
@@ -328,13 +329,13 @@ fun NavigationScreen(
             RouteSelectionBottomSheet(
                 routes = uiState.availableRoutes,
                 selectedRoute = uiState.routeStats,
+                isDarkMode = isDarkTheme,
+                maxHeightForBottomSheet = maxHeightForBottomSheet,
                 onRouteSelected = { route ->
                     viewModel.selectRoute(route)
                     showRouteSelection = false
                 },
-                onDismiss = { showRouteSelection = false },
-                isIndoorRecommended = false,
-                maxHeightForBottomSheet = maxHeightForBottomSheet
+                onDismiss = { showRouteSelection = false }
             )
         }
     }

@@ -1,3 +1,4 @@
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.ComposeViewport
 import kotlinx.browser.document
@@ -7,6 +8,8 @@ import sample.app.App
 fun main() {
     val body = document.body ?: return
     ComposeViewport(body) {
-        App()
+        MaterialTheme {
+            App()
+        }
     }
 }

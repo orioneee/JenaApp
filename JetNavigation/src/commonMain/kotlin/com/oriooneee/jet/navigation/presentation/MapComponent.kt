@@ -232,6 +232,14 @@ fun MapPlaceholderContent(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+
+            Spacer(Modifier.height(24.dp))
+
+            Text(
+                text = "iOS: Provide LocalNativeFactory to display the map",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+            )
         }
     }
 }

@@ -24,7 +24,6 @@ import com.mapbox.maps.extension.compose.annotation.generated.CircleAnnotationGr
 import com.mapbox.maps.extension.compose.annotation.generated.PointAnnotation
 import com.mapbox.maps.extension.compose.annotation.generated.PolylineAnnotation
 import com.mapbox.maps.extension.compose.rememberMapState
-import com.mapbox.maps.extension.compose.style.projection.generated.Projection
 import com.mapbox.maps.extension.compose.style.standard.LightPresetValue
 import com.mapbox.maps.extension.compose.style.standard.MapboxStandardStyle
 import com.mapbox.maps.extension.compose.style.standard.ThemeValue
@@ -153,7 +152,6 @@ actual fun MapComponent(
                         }
                     }
                 },
-                projection = Projection.MERCATOR,
             )
         }
     ) {

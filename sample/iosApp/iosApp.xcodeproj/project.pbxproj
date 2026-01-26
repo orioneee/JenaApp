@@ -7,10 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8440B8D42F28166C0059B85D /* MapboxMaps in Frameworks */ = {isa = PBXBuildFile; productRef = 8440B8D32F28166C0059B85D /* MapboxMaps */; };
+		8440B8D62F2817C00059B85D /* IosNativeViewFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8440B8D52F2817BA0059B85D /* IosNativeViewFactory.swift */; };
+		8440B8D92F2821EC0059B85D /* Media.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8440B8D72F281F3E0059B85D /* Media.xcassets */; };
 		A93A953B29CC810C00F8E227 /* iosApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A93A953A29CC810C00F8E227 /* iosApp.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		8440B8D52F2817BA0059B85D /* IosNativeViewFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IosNativeViewFactory.swift; sourceTree = "<group>"; };
+		8440B8D72F281F3E0059B85D /* Media.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Media.xcassets; sourceTree = "<group>"; };
 		A93A953729CC810C00F8E227 /* Multiplatform App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Multiplatform App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A93A953A29CC810C00F8E227 /* iosApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iosApp.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -20,6 +25,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8440B8D42F28166C0059B85D /* MapboxMaps in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -29,6 +35,7 @@
 		A93A952E29CC810C00F8E227 = {
 			isa = PBXGroup;
 			children = (
+				8440B8D72F281F3E0059B85D /* Media.xcassets */,
 				A93A953929CC810C00F8E227 /* iosApp */,
 				A93A953829CC810C00F8E227 /* Products */,
 				C4127409AE3703430489E7BC /* Frameworks */,
@@ -46,6 +53,7 @@
 		A93A953929CC810C00F8E227 /* iosApp */ = {
 			isa = PBXGroup;
 			children = (
+				8440B8D52F2817BA0059B85D /* IosNativeViewFactory.swift */,
 				A93A953A29CC810C00F8E227 /* iosApp.swift */,
 			);
 			path = iosApp;
@@ -68,6 +76,7 @@
 				A9D80A052AAB5CDE006C8738 /* ShellScript */,
 				A93A953329CC810C00F8E227 /* Sources */,
 				A93A953429CC810C00F8E227 /* Frameworks */,
+				8440B8D82F2821E80059B85D /* Resources */,
 			);
 			buildRules = (
 			);
@@ -101,6 +110,9 @@
 				Base,
 			);
 			mainGroup = A93A952E29CC810C00F8E227;
+			packageReferences = (
+				8440B8D22F28166C0059B85D /* XCRemoteSwiftPackageReference "mapbox-maps-ios" */,
+			);
 			productRefGroup = A93A953829CC810C00F8E227 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -109,6 +121,17 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		8440B8D82F2821E80059B85D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8440B8D92F2821EC0059B85D /* Media.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
 		A9D80A052AAB5CDE006C8738 /* ShellScript */ = {
@@ -135,6 +158,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8440B8D62F2817C00059B85D /* IosNativeViewFactory.swift in Sources */,
 				A93A953B29CC810C00F8E227 /* iosApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -322,6 +346,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		8440B8D22F28166C0059B85D /* XCRemoteSwiftPackageReference "mapbox-maps-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/mapbox/mapbox-maps-ios.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		8440B8D32F28166C0059B85D /* MapboxMaps */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8440B8D22F28166C0059B85D /* XCRemoteSwiftPackageReference "mapbox-maps-ios" */;
+			productName = MapboxMaps;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = A93A952F29CC810C00F8E227 /* Project object */;
 }

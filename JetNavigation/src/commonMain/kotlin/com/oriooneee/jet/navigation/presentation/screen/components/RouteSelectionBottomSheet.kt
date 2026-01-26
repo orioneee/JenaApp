@@ -42,10 +42,10 @@ expect val applyMaxHeightForBottomSheet: Boolean
 fun RouteSelectionBottomSheet(
     routes: List<NavigationDirection>,
     selectedRoute: NavigationDirection?,
-    isIndoorRecommended: Boolean,
+    isDarkMode: Boolean,
     maxHeightForBottomSheet: Dp,
     onRouteSelected: (NavigationDirection) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState()
 
@@ -79,7 +79,7 @@ fun RouteSelectionBottomSheet(
             routes.forEachIndexed { _, route ->
                 val isSelected = route == selectedRoute
                 val isFastest = route == sortedForCheck.first()
-                val presentation = getRoutePresentation(route, isFastest)
+                val presentation = getRoutePresentation(route, isFastest, isDarkMode)
 
                 val badgeText = route.badge
 

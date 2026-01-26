@@ -52,7 +52,8 @@ fun NavigationControls(
     onSwapNodes: () -> Unit,
     isVertical: Boolean,
     availableRoutesCount: Int,
-    onOpenRouteSelection: () -> Unit
+    onOpenRouteSelection: () -> Unit,
+    isDarkMode: Boolean
 ) {
     @Composable
     fun RouteStats() {
@@ -95,7 +96,7 @@ fun NavigationControls(
                                 val mins = stats.estimatedTimeMinutes.toInt()
                                 val secs = ((stats.estimatedTimeMinutes - mins) * 60).toInt()
 
-                                val typeTitle = getRoutePresentation(stats, false).title
+                                val typeTitle = getRoutePresentation(stats, false, isDarkMode).title
 
                                 Text(
                                     text = "$mins min $secs sec",

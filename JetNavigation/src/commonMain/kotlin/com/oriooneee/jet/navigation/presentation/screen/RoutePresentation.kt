@@ -40,7 +40,7 @@ fun generatePathSummary(steps: List<NavigationStep>): String {
 }
 
 @Composable
-fun getRoutePresentation(route: NavigationDirection, isFastest: Boolean): RoutePresentation {
+fun getRoutePresentation(route: NavigationDirection, isFastest: Boolean, isDarkMode: Boolean): RoutePresentation {
     val summary = generatePathSummary(route.steps)
     val isPureOutdoor =
         route.steps.all { it is NavigationStep.OutDoorMaps || it is NavigationStep.TransitionToOutDoor }
@@ -51,7 +51,7 @@ fun getRoutePresentation(route: NavigationDirection, isFastest: Boolean): RouteP
             title = "Via Streets",
             subtitle = "Outdoor route • ${route.totalDistanceMeters.toInt()}m",
             icon = Icons.Outlined.WbSunny,
-            color = Color(0xFFE65100)
+            color = if (isDarkMode) Color(0xFFFFB74D) else Color(0xFFE65100)
         )
 
         else -> RoutePresentation(
