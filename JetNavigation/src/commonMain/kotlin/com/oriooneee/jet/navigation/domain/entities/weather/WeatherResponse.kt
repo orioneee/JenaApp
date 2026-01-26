@@ -9,10 +9,10 @@ data class WeatherResponse(
     @SerialName("current_weather")
     val currentWeather: CurrentWeather,
 ) {
-    fun isRecomendedInDoor(): Boolean {
-        val byCode = WeatherCode.isIndoorRouteRecommendedСode(currentWeather.weatherCode)
-        val byTemp = currentWeather.temperature !in -10.0..35.0
-        return byCode || byTemp
-    }
+//    fun isRecomendedInDoor(): Boolean {
+//        val byCode = WeatherCode.isIndoorRouteRecommendedСode(currentWeather.weatherCode)
+//        val byTemp = currentWeather.temperature !in -10.0..35.0
+//        return byCode || byTemp
+//    }
 }
 

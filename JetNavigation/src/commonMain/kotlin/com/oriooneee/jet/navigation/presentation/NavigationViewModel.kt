@@ -10,26 +10,17 @@ import com.oriooneee.jet.navigation.domain.entities.NavigationStep
 import com.oriooneee.jet.navigation.domain.entities.graph.InDoorNode
 import com.oriooneee.jet.navigation.domain.entities.graph.MasterNavigation
 import com.oriooneee.jet.navigation.domain.entities.graph.SelectNodeResult
-import com.oriooneee.jet.navigation.domain.entities.weather.WeatherResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeoutOrNull
 import org.jetbrains.compose.resources.ExperimentalResourceApi
-import kotlin.time.Duration.Companion.minutes
-import kotlin.time.Duration.Companion.seconds
 
 data class NavigationUiState(
     val startNode: ResolvedNode? = null,
@@ -61,41 +52,14 @@ class NavigationViewModel(
     val uiState = _uiState.asStateFlow()
 
     private val _masterNavigation = MutableStateFlow<MasterNavigation?>(null)
-    private val _currentWeather = MutableStateFlow<WeatherResponse?>(null)
 
-    val isIndoorRecommended = _currentWeather.map {
-        it?.isRecomendedInDoor() ?: false
-    }.stateIn(
-        viewModelScope,
-        started = SharingStarted.Lazily,
-        initialValue = false
-    )
 
-    private val navigationEngine = combine(
-        _masterNavigation.filterNotNull(),
-        _currentWeather
-    ) { masterNav, weather ->
-        NavigationEngine(masterNav, weather?.isRecomendedInDoor() ?: false).also {
-            println("Is indoor recommended: ${weather?.isRecomendedInDoor() ?: "no weather data"}")
-        }
-    }
-
-    suspend fun fetchWeatherData(): WeatherResponse? {
-        return withTimeoutOrNull(10.seconds) {
-            remoteRepository.getWeather().getOrNull()
-        }
-
+    private val navigationEngine = _masterNavigation.filterNotNull().map { navigation ->
+        NavigationEngine(navigation, false)
     }
 
     init {
         loadData()
-        viewModelScope.launch {
-            while (isActive) {
-                delay(5.minutes)
-                val weatherData = fetchWeatherData()
-                _currentWeather.update { weatherData }
-            }
-        }
     }
 
     @OptIn(ExperimentalResourceApi::class)
@@ -107,11 +71,7 @@ class NavigationViewModel(
                 val navData = async {
                     remoteRepository.getMainNavigation().getOrNull()
                 }
-                val weatherData = async {
-                    fetchWeatherData()
-                }
                 _masterNavigation.value = navData.await()
-                _currentWeather.value = weatherData.await()
                 _uiState.update {
                     it.copy(
                         isLoading = false

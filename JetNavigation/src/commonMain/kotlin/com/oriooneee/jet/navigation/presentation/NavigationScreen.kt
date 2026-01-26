@@ -272,7 +272,6 @@ fun NavigationScreen(
     viewModel: NavigationViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val isIndoorRecommended by viewModel.isIndoorRecommended.collectAsState()
 
     val planColor = MaterialTheme.colorScheme.onSurface
     val planLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
@@ -491,7 +490,7 @@ fun NavigationScreen(
                             currentStepIndex = uiState.currentStepIndex,
                             totalSteps = uiState.navigationSteps.size,
                             routeStats = uiState.routeStats,
-                            isIndoorRecommended = isIndoorRecommended,
+                            isIndoorRecommended = false,
                             onPrevious = viewModel::previousStep,
                             onNext = viewModel::nextStep,
                             startNode = uiState.startNode,
@@ -533,7 +532,7 @@ fun NavigationScreen(
                     showRouteSelection = false
                 },
                 onDismiss = { showRouteSelection = false },
-                isIndoorRecommended = isIndoorRecommended,
+                isIndoorRecommended = false,
                 maxHeightForBottomSheet = maxHeightForBottomSheet
             )
         }
