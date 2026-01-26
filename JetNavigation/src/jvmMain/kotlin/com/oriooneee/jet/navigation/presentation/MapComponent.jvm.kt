@@ -120,7 +120,7 @@ actual fun MapComponent(
 
                 if (state.loadingState is LoadingState.Loading) {
                     LinearProgressIndicator(
-                        progress = { (state.loadingState as LoadingState.Loading).progress },
+                        progress = { (state.loadingState as? LoadingState.Loading)?.progress ?: 0f },
                         modifier = Modifier.fillMaxWidth(),
                         color = MaterialTheme.colorScheme.secondary
                     )
