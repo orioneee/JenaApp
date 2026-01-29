@@ -29,10 +29,10 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation(compose.runtime)
-            implementation(compose.ui)
-            implementation(compose.foundation)
-            implementation(compose.material3)
+            implementation(libs.runtime)
+            implementation(libs.ui)
+            implementation(libs.foundation)
+            implementation(libs.jetbrains.material3)
 
             implementation(project(":JetNavigation"))
         }
@@ -88,7 +88,7 @@ compose.desktop {
             "--add-opens=java.desktop/sun.awt=ALL-UNNAMED",
             "--add-opens=java.desktop/java.awt.event=ALL-UNNAMED",
             "--add-opens=java.desktop/sun.lwawt=ALL-UNNAMED",
-            "--add-opens=java.desktop/sun.lwawt.macosx=ALL-UNNAMED" // Обязательно для macOS (судя по твоему логу)
+            "--add-opens=java.desktop/sun.lwawt.macosx=ALL-UNNAMED"
         )
     }
 }

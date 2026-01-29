@@ -87,7 +87,6 @@ fun getMapboxHtml(
                     bearing: 18.5,
                     pitch: 0,
                     dragRotate: false,
-                    projection: 'mercator',
                     attributionControl: false,
                     config: {
                         basemap: {

@@ -1,3 +1,7 @@
+@file:OptIn(ExperimentalWasmDsl::class)
+
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+
 plugins {
     alias(libs.plugins.multiplatform)
     alias(libs.plugins.android.library)
@@ -20,11 +24,11 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation(compose.runtime)
-            implementation(compose.ui)
-            implementation(compose.foundation)
-            implementation(compose.material3)
-            implementation(compose.materialIconsExtended)
+            implementation(libs.runtime)
+            implementation(libs.ui)
+            implementation(libs.foundation)
+            implementation(libs.jetbrains.material3)
+            implementation(libs.material.icons.extended)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.kotlinx.serialization.json)
@@ -35,7 +39,7 @@ kotlin {
             implementation(libs.ktor.serialization.json)
             implementation(libs.ktor.client.logging)
             implementation(libs.multiplatformSettings)
-            implementation(compose.components.resources)
+            implementation(libs.components.resources)
 
             implementation(libs.lifecycle.viewmodel.compose)
             implementation(libs.kotlinx.serialization.core)
@@ -48,11 +52,6 @@ kotlin {
             implementation(libs.koin.compose.viewmodel)
 
         }
-        wasmJsMain.dependencies {
-            implementation("io.github.parkwoocheol:compose-webview:1.6.0")
-
-        }
-
         commonTest.dependencies {
             implementation(kotlin("test"))
         }
