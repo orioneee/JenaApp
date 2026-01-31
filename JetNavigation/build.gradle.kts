@@ -62,8 +62,7 @@ kotlin {
             implementation(libs.android.ndk27)
             implementation(libs.maps.compose.ndk27)
             implementation(libs.androidx.startup.runtime)
-
-
+            implementation(libs.maps.compose)
         }
 
         jvmMain.dependencies {
@@ -95,6 +94,17 @@ android {
 
     defaultConfig {
         minSdk = 21
+
+        val googleMapsApiKey = providers.provider {
+            System.getenv("GOOGLE_MAPS_API_KEY")
+                ?: rootProject.file("local.properties")
+                    .takeIf { it.exists() }
+                    ?.readLines()
+                    ?.firstOrNull { it.startsWith("GOOGLE_MAPS_API_KEY=") }
+                    ?.substringAfter("=")
+                ?: ""
+        }.getOrElse("")
+        manifestPlaceholders["GOOGLE_MAPS_API_KEY"] = googleMapsApiKey
     }
 }
 
@@ -134,17 +144,28 @@ mavenPublishing {
 buildConfig {
     packageName("com.oriooneee.jet.navigation.buildconfig")
 
-    val mapsApiKey = providers.provider {
-        System.getenv("MAPS_API_KEY")
+    val mapBoxApiKey = providers.provider {
+        System.getenv("MAPBOX_API_KEY")
             ?: rootProject.file("local.properties")
                 .takeIf { it.exists() }
                 ?.readLines()
-                ?.firstOrNull { it.startsWith("MAPS_API_KEY=") }
+                ?.firstOrNull { it.startsWith("MAPBOX_API_KEY=") }
                 ?.substringAfter("=")
             ?: ""
     }.getOrElse("")
-    println("MAPS_API_KEY is set: ${mapsApiKey.length}")
+    val googleMapsApiKey = providers.provider {
+        System.getenv("GOOGLE_MAPS_API_KEY")
+            ?: rootProject.file("local.properties")
+                .takeIf { it.exists() }
+                ?.readLines()
+                ?.firstOrNull { it.startsWith("GOOGLE_MAPS_API_KEY=") }
+                ?.substringAfter("=")
+            ?: ""
+    }.getOrElse("")
+    println("GOOGLE_MAPS_API_KEY is set: ${googleMapsApiKey.length}")
+    println("MAPBOX_API_KEY is set: ${mapBoxApiKey.length}")
 
-    buildConfigField("String", "MAPS_API_KEY", "\"$mapsApiKey\"")
+    buildConfigField("String", "MAPBOX_API_KEY", "\"$mapBoxApiKey\"")
+    buildConfigField("String", "GOOGLE_MAPS_API_KEY", "\"$googleMapsApiKey\"")
 }
 

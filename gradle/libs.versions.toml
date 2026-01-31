@@ -7,6 +7,7 @@ foundation = "1.10.0"
 kotlin = "2.3.0"
 agp = "8.13.2"
 lifecycleViewmodelCompose = "2.9.6"
+mapsCompose = "8.0.0"
 mapsComposeNdk27 = "11.18.0"
 material3Version = "1.9.0"
 materialIconsExtended = "1.7.3"
@@ -52,6 +53,7 @@ ktor-client-js = { module = "io.ktor:ktor-client-js", version.ref = "ktor" }
 ktor-client-curl = { module = "io.ktor:ktor-client-curl", version.ref = "ktor" }
 ktor-client-winhttp = { module = "io.ktor:ktor-client-winhttp", version.ref = "ktor" }
 lifecycle-viewmodel-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleViewmodelCompose" }
+maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "mapsCompose" }
 maps-compose-ndk27 = { module = "com.mapbox.extension:maps-compose-ndk27", version.ref = "mapsComposeNdk27" }
 material-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 multiplatformSettings = { module = "com.russhwolf:multiplatform-settings-no-arg", version.ref = "multiplatformSettings" }
