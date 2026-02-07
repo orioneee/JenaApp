@@ -71,8 +71,8 @@ private fun StepPreview(
 
     Card(
         modifier = modifier
-            .width(280.dp)
-            .height(300.dp),
+            .width(140.dp)
+            .height(150.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow

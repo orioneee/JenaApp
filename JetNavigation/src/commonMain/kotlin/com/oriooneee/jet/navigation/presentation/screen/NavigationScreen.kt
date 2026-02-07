@@ -71,6 +71,7 @@ import kotlin.time.Duration.Companion.seconds
 
 const val KEY_SELECTED_START_NODE = "selected_start_node"
 const val KEY_SELECTED_END_NODE = "selected_end_node"
+expect val shouldHideMapForAnimations: Boolean
 
 @Composable
 fun NavigationScreen(
@@ -82,7 +83,7 @@ fun NavigationScreen(
     var isHiddenMapCompoent by remember { mutableStateOf(false) }
     var shouldHideMap by remember { mutableStateOf(false) }
     LaunchedEffect(isHiddenMapCompoent) {
-        if (isHiddenMapCompoent && currentStep is NavigationStep.OutDoorMaps) {
+        if (isHiddenMapCompoent && currentStep is NavigationStep.OutDoorMaps && shouldHideMapForAnimations) {
             shouldHideMap = true
             delay(1.seconds)
             isHiddenMapCompoent = false

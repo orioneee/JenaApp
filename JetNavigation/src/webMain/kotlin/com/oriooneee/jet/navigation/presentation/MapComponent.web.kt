@@ -20,28 +20,36 @@ actual fun MapComponent(
     isDarkTheme: Boolean,
     isStatic: Boolean
 ) {
-    val pathPointsJson = remember(step) {
-        step?.path?.joinToString(prefix = "[", postfix = "]") { "[${it.longitude}, ${it.latitude}]" }
-            ?: "[]"
-    }
-
-    val mapHtml = remember(pathPointsJson, isDarkTheme) {
-        getMapboxHtml(BuildConfig.MAPBOX_API_KEY, pathPointsJson, isDarkTheme, isStatic)
-    }
-
-    Box(modifier = modifier) {
-        WebElementView(
-            factory = {
-                (document.createElement("iframe") as HTMLIFrameElement).apply {
-                    style.width = "100%"
-                    style.height = "100%"
-                    style.border = "none"
-                }
-            },
-            modifier = Modifier.fillMaxSize(),
-            update = { iframe ->
-                iframe.srcdoc = mapHtml
-            }
+    if(isStatic){
+        StaticImageMap(
+            modifier = modifier,
+            step = step,
+            isDarkTheme = isDarkTheme
         )
+    } else{
+        val pathPointsJson = remember(step) {
+            step?.path?.joinToString(prefix = "[", postfix = "]") { "[${it.longitude}, ${it.latitude}]" }
+                ?: "[]"
+        }
+
+        val mapHtml = remember(pathPointsJson, isDarkTheme) {
+            getMapboxHtml(BuildConfig.MAPBOX_API_KEY, pathPointsJson, isDarkTheme, isStatic)
+        }
+
+        Box(modifier = modifier) {
+            WebElementView(
+                factory = {
+                    (document.createElement("iframe") as HTMLIFrameElement).apply {
+                        style.width = "100%"
+                        style.height = "100%"
+                        style.border = "none"
+                    }
+                },
+                modifier = Modifier.fillMaxSize(),
+                update = { iframe ->
+                    iframe.srcdoc = mapHtml
+                }
+            )
+        }
     }
 }

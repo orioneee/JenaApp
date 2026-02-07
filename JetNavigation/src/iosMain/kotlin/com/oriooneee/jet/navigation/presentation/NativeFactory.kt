@@ -13,10 +13,10 @@ val LocalNativeFactory = staticCompositionLocalOf<NativeFactory?> {
 interface NativeFactory {
     fun getMapBoxMap(
         step: NavigationStep.OutDoorMaps?,
-        isDarkTheme: Boolean
+        isDarkTheme: Boolean,
     ): UIView
 
     companion object {
-        fun getMapBoxToken() = BuildConfig.MAPS_API_KEY
+        fun getMapBoxToken() = BuildConfig.MAPBOX_API_KEY
     }
 }

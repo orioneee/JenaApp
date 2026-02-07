@@ -14,7 +14,8 @@ actual fun MapComponent(
     MapBoxMapComponent(
         modifier = modifier,
         step = step,
-        isDarkTheme = isDarkTheme
+        isDarkTheme = isDarkTheme,
+        isStatic = isStatic
     )
 //    GoogleMapsMapComponent(
 //        modifier = modifier,

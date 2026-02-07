@@ -14,15 +14,23 @@ actual fun MapComponent(
     isDarkTheme: Boolean,
     isStatic: Boolean
 ) {
-    val nativeFactory = LocalNativeFactory.current
-    if (nativeFactory == null) {
-        MapPlaceholderContent(step)
-    } else {
-        UIKitView(
-            factory = {
-                nativeFactory.getMapBoxMap(step, isDarkTheme)
-            },
-            modifier = modifier
+    if(isStatic){
+        StaticImageMap(
+            modifier = modifier,
+            step = step,
+            isDarkTheme = isDarkTheme
         )
+    } else{
+        val nativeFactory = LocalNativeFactory.current
+        if (nativeFactory == null) {
+            MapPlaceholderContent(step)
+        } else {
+            UIKitView(
+                factory = {
+                    nativeFactory.getMapBoxMap(step, isDarkTheme)
+                },
+                modifier = modifier
+            )
+        }
     }
 }

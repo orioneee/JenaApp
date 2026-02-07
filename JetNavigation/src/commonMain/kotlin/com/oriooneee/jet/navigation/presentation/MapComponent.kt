@@ -11,17 +11,21 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Park
+import androidx.compose.material.icons.rounded.CloudOff
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import coil3.compose.SubcomposeAsyncImage
 import com.oriooneee.jet.navigation.buildconfig.BuildConfig
 import com.oriooneee.jet.navigation.domain.entities.Coordinates
 import com.oriooneee.jet.navigation.domain.entities.NavigationStep
@@ -206,6 +210,7 @@ fun encodePolyline(coordinates: List<Coordinates>): String {
 
     return result.toString()
 }
+
 fun getStaticMapUrl(
     step: NavigationStep.OutDoorMaps,
     accessToken: String,
@@ -219,20 +224,22 @@ fun getStaticMapUrl(
     val height = 500
 
     val encodedPath = encodePolyline(step.path).encodeURLQueryComponent()
-    val pathOverlay = "path-5+$colorHex-0.5($encodedPath)"
+    val pathOverlay = "path-5+$colorHex-1($encodedPath)"
 
     val startPoint = step.path.first()
     val endPoint = step.path.last()
 
     val startPin = "pin-s+$colorHex(${startPoint.longitude},${startPoint.latitude})"
 
-    val markerImageUrl = "https://raw.githubusercontent.com/orioneee/JetNavigation/refs/heads/main/JetNavigation/src/commonMain/composeResources/files/marker.png"
+    val markerImageUrl =
+        "https://raw.githubusercontent.com/orioneee/JetNavigation/refs/heads/main/JetNavigation/src/commonMain/composeResources/files/marker.png"
     val encodedMarkerUrl = markerImageUrl.replace(":", "%3A").replace("/", "%2F")
     val endPin = "url-$encodedMarkerUrl(${endPoint.longitude},${endPoint.latitude})"
 
     val overlays = "$pathOverlay,$endPin,$startPin"
+    val bounds = "[28.40455,49.22823,28.41498,49.2358]"
 
-    return "https://api.mapbox.com/styles/v1/$styleId/static/$overlays/auto/${width}x${height}@2x?access_token=$accessToken&attribution=false&logo=false".also {
+    return "https://api.mapbox.com/styles/v1/$styleId/static/$overlays/$bounds/${width}x${height}@2x?access_token=$accessToken&attribution=false&logo=false".also {
         println("Generated Static Map URL: $it")
     }
 }
@@ -254,11 +261,47 @@ fun StaticImageMap(
     }
 
     if (imageUrl != null) {
-        AsyncImage(
+        SubcomposeAsyncImage(
             model = imageUrl,
             contentDescription = "Static Map",
             modifier = modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop
+            contentScale = ContentScale.Crop,
+            error = {
+                println("Failed to load static map image: ${it.result.throwable.stackTraceToString()}")
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.CloudOff,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f),
+                        modifier = Modifier.size(48.dp)
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = "Unavailable",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            },
+            loading = {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(
+                        color = ProgressIndicatorDefaults.circularColor,
+                        trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                        strokeCap = StrokeCap.Round,
+                    )
+                }
+            }
         )
     } else {
         MapPlaceholderContent(step)
@@ -275,9 +318,9 @@ expect fun MapComponent(
 
 @Composable
 fun MapPlaceholderContent(
-    step: NavigationStep.OutDoorMaps?
-){
-    step?: return
+    step: NavigationStep.OutDoorMaps?,
+) {
+    step ?: return
     Box(
         modifier = Modifier
             .fillMaxSize()

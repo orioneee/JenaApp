@@ -43,125 +43,133 @@ fun MapBoxMapComponent(
     isDarkTheme: Boolean,
     isStatic: Boolean
 ) {
-    MapboxOptions.accessToken = BuildConfig.MAPBOX_API_KEY
+    if(isStatic){
+        StaticImageMap(
+            modifier = modifier,
+            step = step,
+            isDarkTheme = isDarkTheme
+        )
+    } else{
+        MapboxOptions.accessToken = BuildConfig.MAPBOX_API_KEY
 
-    val context = LocalContext.current
-    val endMarkerBitmap = remember {
-        ContextCompat.getDrawable(context, R.drawable.ic_map_marker)?.toBitmap()
-    }
+        val context = LocalContext.current
+        val endMarkerBitmap = remember {
+            ContextCompat.getDrawable(context, R.drawable.ic_map_marker)?.toBitmap()
+        }
 
-    val routePoints = remember(step) {
-        step?.path?.map { Point.fromLngLat(it.longitude, it.latitude) } ?: emptyList()
-    }
+        val routePoints = remember(step) {
+            step?.path?.map { Point.fromLngLat(it.longitude, it.latitude) } ?: emptyList()
+        }
 
-    val mapState = rememberMapState {
-        gesturesSettings = GesturesSettings {
-            rotateEnabled = false
-            pitchEnabled = false
-            if (isStatic) {
-                scrollEnabled = false
-                pinchToZoomEnabled = false
-                doubleTapToZoomInEnabled = false
-                doubleTouchToZoomOutEnabled = false
+        val mapState = rememberMapState {
+            gesturesSettings = GesturesSettings {
+                rotateEnabled = false
+                pitchEnabled = false
+                if (isStatic) {
+                    scrollEnabled = false
+                    pinchToZoomEnabled = false
+                    doubleTapToZoomInEnabled = false
+                    doubleTouchToZoomOutEnabled = false
+                }
             }
         }
-    }
 
-    val mapboxMapFlow = remember {
-        MutableStateFlow<MapboxMap?>(null)
-    }
-    val scope = rememberCoroutineScope()
-    val viewportState = rememberMapViewportState {
-        scope.launch {
-            val mapboxMap = mapboxMapFlow.filterNotNull().first()
-            if (routePoints.size >= 2) {
-                val geometry = LineString.fromLngLats(routePoints)
-                setCameraOptions(
-                    mapboxMap.cameraForGeometry(
-                        geometry = geometry,
-                        bearing = 18.5,
-                        geometryPadding = EdgeInsets(25.0, 25.0, 25.0, 25.0)
+        val mapboxMapFlow = remember {
+            MutableStateFlow<MapboxMap?>(null)
+        }
+        val scope = rememberCoroutineScope()
+        val viewportState = rememberMapViewportState {
+            scope.launch {
+                val mapboxMap = mapboxMapFlow.filterNotNull().first()
+                if (routePoints.size >= 2) {
+                    val geometry = LineString.fromLngLats(routePoints)
+                    setCameraOptions(
+                        mapboxMap.cameraForGeometry(
+                            geometry = geometry,
+                            bearing = 18.5,
+                            geometryPadding = EdgeInsets(25.0, 25.0, 25.0, 25.0)
+                        )
                     )
-                )
+                }
             }
         }
-    }
-    val googleBlue = Color(0xFF4285F4)
-    val routeBorderColor = Color(0xFF1558B0)
-    val whiteColor = Color.White
+        val googleBlue = Color(0xFF4285F4)
+        val routeBorderColor = Color(0xFF1558B0)
+        val whiteColor = Color.White
 
-    val circleAnnotations = remember(routePoints) {
-        if (routePoints.size >= 2) {
-            listOf(
-                CircleAnnotationOptions()
-                    .withPoint(routePoints.first())
-                    .withCircleRadius(4.0)
-                    .withCircleStrokeWidth(2.0)
-                    .withCircleColor(googleBlue.toArgb())
-                    .withCircleStrokeColor(whiteColor.toArgb()),
-            )
-        } else {
-            emptyList()
+        val circleAnnotations = remember(routePoints) {
+            if (routePoints.size >= 2) {
+                listOf(
+                    CircleAnnotationOptions()
+                        .withPoint(routePoints.first())
+                        .withCircleRadius(4.0)
+                        .withCircleStrokeWidth(2.0)
+                        .withCircleColor(googleBlue.toArgb())
+                        .withCircleStrokeColor(whiteColor.toArgb()),
+                )
+            } else {
+                emptyList()
+            }
         }
-    }
 
-    MapboxMap(
-        modifier = modifier,
-        mapState = mapState,
-        mapViewportState = viewportState,
-        compass = {},
-        scaleBar = {},
-        attribution = {},
-        logo = {},
-        composeMapInitOptions = with(LocalDensity.current) {
-            ComposeMapInitOptions(density, textureView = true)
-        },
-        style = {
-            MapboxStandardStyle(
-                init = {
-                    theme = ThemeValue.FADED
-                    lightPreset = if (isDarkTheme) {
-                        LightPresetValue.NIGHT
-                    } else {
-                        LightPresetValue.DAY
-                    }
-                },
-                topSlot = {
-                    if (routePoints.size >= 2) {
-                        PolylineAnnotation(points = routePoints) {
-                            lineWidth = 8.0
-                            lineJoin = LineJoin.ROUND
-                            lineColor = routeBorderColor
-                            lineEmissiveStrength = 1.0
+        MapboxMap(
+            modifier = modifier,
+            mapState = mapState,
+            mapViewportState = viewportState,
+            compass = {},
+            scaleBar = {},
+            attribution = {},
+            logo = {},
+            composeMapInitOptions = with(LocalDensity.current) {
+                ComposeMapInitOptions(density, textureView = true)
+            },
+            style = {
+                MapboxStandardStyle(
+                    init = {
+                        theme = ThemeValue.FADED
+                        lightPreset = if (isDarkTheme) {
+                            LightPresetValue.NIGHT
+                        } else {
+                            LightPresetValue.DAY
                         }
+                    },
+                    topSlot = {
+                        if (routePoints.size >= 2) {
+                            PolylineAnnotation(points = routePoints) {
+                                lineWidth = 8.0
+                                lineJoin = LineJoin.ROUND
+                                lineColor = routeBorderColor
+                                lineEmissiveStrength = 1.0
+                            }
 
-                        PolylineAnnotation(points = routePoints) {
-                            lineWidth = 8.0
-                            lineJoin = LineJoin.ROUND
-                            lineColor = googleBlue
-                            lineEmissiveStrength = 1.0
-                        }
+                            PolylineAnnotation(points = routePoints) {
+                                lineWidth = 8.0
+                                lineJoin = LineJoin.ROUND
+                                lineColor = googleBlue
+                                lineEmissiveStrength = 1.0
+                            }
 
-                        CircleAnnotationGroup(
-                            annotations = circleAnnotations
-                        ) {
-                            circleEmissiveStrength = 1.0
-                        }
+                            CircleAnnotationGroup(
+                                annotations = circleAnnotations
+                            ) {
+                                circleEmissiveStrength = 1.0
+                            }
 
-                        endMarkerBitmap?.let { bitmap ->
-                            PointAnnotation(point = routePoints.last()) {
-                                iconImage = IconImage(bitmap)
-                                iconAnchor =
-                                    com.mapbox.maps.extension.style.layers.properties.generated.IconAnchor.BOTTOM
+                            endMarkerBitmap?.let { bitmap ->
+                                PointAnnotation(point = routePoints.last()) {
+                                    iconImage = IconImage(bitmap)
+                                    iconAnchor =
+                                        com.mapbox.maps.extension.style.layers.properties.generated.IconAnchor.BOTTOM
+                                }
                             }
                         }
-                    }
-                },
-            )
-        }
-    ) {
-        MapEffect {
-            mapboxMapFlow.value = it.mapboxMap
+                    },
+                )
+            }
+        ) {
+            MapEffect {
+                mapboxMapFlow.value = it.mapboxMap
+            }
         }
     }
 }
