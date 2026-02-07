@@ -92,6 +92,7 @@ fun ZoomableMapCanvas(
     routeColor: Color,
     startNodeColor: Color,
     endNodeColor: Color,
+    isStatic: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     if (renderData == null) {
@@ -109,7 +110,6 @@ fun ZoomableMapCanvas(
     val iconPainters = renderData.icons.map { it.icon }.distinct()
         .associateWith { rememberVectorPainter(it) }
 
-    // Кэшируем Path объекты - создаются один раз при изменении renderData
     val cachedPaths = remember(renderData) {
         val polygonPaths = renderData.polygons.mapNotNull { points ->
             if (points.isEmpty()) return@mapNotNull null
@@ -145,7 +145,6 @@ fun ZoomableMapCanvas(
         CachedPaths(polygonPaths, polylinePaths, routePath, routeBounds)
     }
 
-    // Кэшируем bounds для singleLines
     val singleLineBounds = remember(renderData) {
         renderData.singleLines.map { (start, end) ->
             Rect(
@@ -231,7 +230,7 @@ fun ZoomableMapCanvas(
                         topLeft = routeBounds.first,
                         bottomRight = routeBounds.second,
                         contentSize = contentSize,
-                        paddingFraction = 0.1f
+                        paddingFraction = 0.025f
                     )
                 }
                 initFocusPoint != Offset.Zero -> {
@@ -247,30 +246,36 @@ fun ZoomableMapCanvas(
             modifier = Modifier
                 .fillMaxSize()
                 .pointerInput(Unit) {
-                    detectTransformGestures { centroid, pan, zoom, _ ->
-                        zoomState.onGesture(centroid, pan, zoom)
+                    if(!isStatic){
+                        detectTransformGestures { centroid, pan, zoom, _ ->
+                            zoomState.onGesture(centroid, pan, zoom)
+                        }
                     }
                 }
                 .pointerInput(Unit) {
-                    detectTapGestures(
-                        onDoubleTap = { scope.launch { zoomState.smoothZoomIn() } }
-                    )
+                   if(!isStatic){
+                       detectTapGestures(
+                           onDoubleTap = { scope.launch { zoomState.smoothZoomIn() } }
+                       )
+                   }
                 }
                 .onMouseScroll { scrollDelta, cursorPosition ->
                     // Нормализуем delta - берём только направление
-                    val direction = when {
-                        scrollDelta.y > 0 -> -1f
-                        scrollDelta.y < 0 -> 1f
-                        else -> 0f
-                    }
-                    if (direction != 0f) {
-                        val zoomStep = 0.0115f
-                        val zoomFactor = 1f + (direction * zoomStep)
-                        zoomState.onGesture(
-                            centroid = cursorPosition,
-                            pan = Offset.Zero,
-                            zoomChange = zoomFactor
-                        )
+                    if(!isStatic){
+                        val direction = when {
+                            scrollDelta.y > 0 -> -1f
+                            scrollDelta.y < 0 -> 1f
+                            else -> 0f
+                        }
+                        if (direction != 0f) {
+                            val zoomStep = 0.0115f
+                            val zoomFactor = 1f + (direction * zoomStep)
+                            zoomState.onGesture(
+                                centroid = cursorPosition,
+                                pan = Offset.Zero,
+                                zoomChange = zoomFactor
+                            )
+                        }
                     }
                 }
         ) {
@@ -543,20 +548,22 @@ fun ZoomableMapCanvas(
             }
         }
 
-        Column(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            SmallFloatingActionButton(
-                onClick = { scope.launch { zoomState.smoothZoomIn() } },
-                containerColor = MaterialTheme.colorScheme.primaryContainer
-            ) { Icon(Icons.Default.Add, "Zoom In") }
-            SmallFloatingActionButton(
-                onClick = { scope.launch { zoomState.smoothZoomOut() } },
-                containerColor = MaterialTheme.colorScheme.primaryContainer
-            ) { Icon(Icons.Default.Remove, "Zoom Out") }
+        if(!isStatic){
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                SmallFloatingActionButton(
+                    onClick = { scope.launch { zoomState.smoothZoomIn() } },
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                ) { Icon(Icons.Default.Add, "Zoom In") }
+                SmallFloatingActionButton(
+                    onClick = { scope.launch { zoomState.smoothZoomOut() } },
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                ) { Icon(Icons.Default.Remove, "Zoom Out") }
+            }
         }
     }
 }

@@ -17,7 +17,8 @@ import org.w3c.dom.HTMLIFrameElement
 actual fun MapComponent(
     modifier: Modifier,
     step: NavigationStep.OutDoorMaps?,
-    isDarkTheme: Boolean
+    isDarkTheme: Boolean,
+    isStatic: Boolean
 ) {
     val pathPointsJson = remember(step) {
         step?.path?.joinToString(prefix = "[", postfix = "]") { "[${it.longitude}, ${it.latitude}]" }
@@ -25,7 +26,7 @@ actual fun MapComponent(
     }
 
     val mapHtml = remember(pathPointsJson, isDarkTheme) {
-        getMapboxHtml(BuildConfig.MAPS_API_KEY, pathPointsJson, isDarkTheme)
+        getMapboxHtml(BuildConfig.MAPBOX_API_KEY, pathPointsJson, isDarkTheme, isStatic)
     }
 
     Box(modifier = modifier) {

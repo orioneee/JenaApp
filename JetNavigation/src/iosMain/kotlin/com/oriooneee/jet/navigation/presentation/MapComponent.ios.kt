@@ -11,7 +11,8 @@ import kotlinx.cinterop.ExperimentalForeignApi
 actual fun MapComponent(
     modifier: Modifier,
     step: NavigationStep.OutDoorMaps?,
-    isDarkTheme: Boolean
+    isDarkTheme: Boolean,
+    isStatic: Boolean
 ) {
     val nativeFactory = LocalNativeFactory.current
     if (nativeFactory == null) {

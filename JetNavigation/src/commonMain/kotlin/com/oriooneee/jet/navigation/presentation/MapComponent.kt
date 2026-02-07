@@ -15,15 +15,23 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
+import com.oriooneee.jet.navigation.buildconfig.BuildConfig
+import com.oriooneee.jet.navigation.domain.entities.Coordinates
 import com.oriooneee.jet.navigation.domain.entities.NavigationStep
+import io.ktor.http.encodeURLQueryComponent
+
 fun getMapboxHtml(
     accessToken: String,
     pathPoints: String,
-    isDarkTheme: Boolean
+    isDarkTheme: Boolean,
+    isStatic: Boolean
 ): String {
     val markerSvgText = """
         <svg height="50" id="vector" viewBox="0 0 32 50" width="32" xmlns="http://www.w3.org/2000/svg">
@@ -54,6 +62,8 @@ fun getMapboxHtml(
     val whiteColor = "#FFFFFF"
 
     val lightPreset = if (isDarkTheme) "night" else "day"
+    val interactionEnabled = if (isStatic) "false" else "true"
+
     return """
         <!DOCTYPE html>
         <html>
@@ -87,6 +97,11 @@ fun getMapboxHtml(
                     bearing: 18.5,
                     pitch: 0,
                     dragRotate: false,
+                    scrollZoom: $interactionEnabled,
+                    dragPan: $interactionEnabled,
+                    doubleClickZoom: $interactionEnabled,
+                    touchZoomRotate: $interactionEnabled,
+                    boxZoom: $interactionEnabled,
                     attributionControl: false,
                     config: {
                         basemap: {
@@ -150,7 +165,7 @@ fun getMapboxHtml(
 
                         const bounds = new mapboxgl.LngLatBounds();
                         coordinates.forEach(coord => bounds.extend(coord));
-                        map.fitBounds(bounds, { padding: 100, bearing: 18.5, duration: 0 });
+                        map.fitBounds(bounds, { padding: 25, bearing: 18.5, duration: 0 });
                     }
                 });
             </script>
@@ -158,11 +173,104 @@ fun getMapboxHtml(
         </html>
     """.trimIndent()
 }
+
+private fun encodeDelta(result: StringBuilder, value: Int) {
+    var num = if (value < 0) {
+        (value shl 1).inv()
+    } else {
+        value shl 1
+    }
+
+    while (num >= 0x20) {
+        result.append(((0x20 or (num and 0x1f)) + 63).toChar())
+        num = num shr 5
+    }
+    result.append((num + 63).toChar())
+}
+
+fun encodePolyline(coordinates: List<Coordinates>): String {
+    var lastLat = 0
+    var lastLng = 0
+    val result = StringBuilder()
+
+    for (coord in coordinates) {
+        val lat = (coord.latitude * 1e5).toInt()
+        val lng = (coord.longitude * 1e5).toInt()
+
+        encodeDelta(result, lat - lastLat)
+        encodeDelta(result, lng - lastLng)
+
+        lastLat = lat
+        lastLng = lng
+    }
+
+    return result.toString()
+}
+fun getStaticMapUrl(
+    step: NavigationStep.OutDoorMaps,
+    accessToken: String,
+    isDarkTheme: Boolean
+): String {
+    if (step.path.isEmpty()) return ""
+
+    val styleId = if (isDarkTheme) "mapbox/dark-v11" else "mapbox/streets-v12"
+    val colorHex = "4285F4"
+    val width = 500
+    val height = 500
+
+    val encodedPath = encodePolyline(step.path).encodeURLQueryComponent()
+    val pathOverlay = "path-5+$colorHex-0.5($encodedPath)"
+
+    val startPoint = step.path.first()
+    val endPoint = step.path.last()
+
+    val startPin = "pin-s+$colorHex(${startPoint.longitude},${startPoint.latitude})"
+
+    val markerImageUrl = "https://raw.githubusercontent.com/orioneee/JetNavigation/refs/heads/main/JetNavigation/src/commonMain/composeResources/files/marker.png"
+    val encodedMarkerUrl = markerImageUrl.replace(":", "%3A").replace("/", "%2F")
+    val endPin = "url-$encodedMarkerUrl(${endPoint.longitude},${endPoint.latitude})"
+
+    val overlays = "$pathOverlay,$endPin,$startPin"
+
+    return "https://api.mapbox.com/styles/v1/$styleId/static/$overlays/auto/${width}x${height}@2x?access_token=$accessToken&attribution=false&logo=false".also {
+        println("Generated Static Map URL: $it")
+    }
+}
+
+@Composable
+fun StaticImageMap(
+    modifier: Modifier = Modifier,
+    step: NavigationStep.OutDoorMaps?,
+    isDarkTheme: Boolean
+) {
+    val imageUrl = remember(step, isDarkTheme) {
+        step?.let {
+            getStaticMapUrl(
+                step = it,
+                accessToken = BuildConfig.MAPBOX_API_KEY,
+                isDarkTheme = isDarkTheme
+            )
+        }
+    }
+
+    if (imageUrl != null) {
+        AsyncImage(
+            model = imageUrl,
+            contentDescription = "Static Map",
+            modifier = modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+    } else {
+        MapPlaceholderContent(step)
+    }
+}
+
 @Composable
 expect fun MapComponent(
     modifier: Modifier = Modifier,
     step: NavigationStep.OutDoorMaps?,
-    isDarkTheme: Boolean
+    isDarkTheme: Boolean,
+    isStatic: Boolean = false
 )
 
 @Composable

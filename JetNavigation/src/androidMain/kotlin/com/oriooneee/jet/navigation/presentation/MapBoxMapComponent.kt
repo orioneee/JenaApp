@@ -40,7 +40,8 @@ import kotlinx.coroutines.launch
 fun MapBoxMapComponent(
     modifier: androidx.compose.ui.Modifier,
     step: com.oriooneee.jet.navigation.domain.entities.NavigationStep.OutDoorMaps?,
-    isDarkTheme: Boolean
+    isDarkTheme: Boolean,
+    isStatic: Boolean
 ) {
     MapboxOptions.accessToken = BuildConfig.MAPBOX_API_KEY
 
@@ -57,8 +58,15 @@ fun MapBoxMapComponent(
         gesturesSettings = GesturesSettings {
             rotateEnabled = false
             pitchEnabled = false
+            if (isStatic) {
+                scrollEnabled = false
+                pinchToZoomEnabled = false
+                doubleTapToZoomInEnabled = false
+                doubleTouchToZoomOutEnabled = false
+            }
         }
     }
+
     val mapboxMapFlow = remember {
         MutableStateFlow<MapboxMap?>(null)
     }
@@ -72,7 +80,7 @@ fun MapBoxMapComponent(
                     mapboxMap.cameraForGeometry(
                         geometry = geometry,
                         bearing = 18.5,
-                        geometryPadding = EdgeInsets(100.0, 100.0, 100.0, 100.0)
+                        geometryPadding = EdgeInsets(25.0, 25.0, 25.0, 25.0)
                     )
                 )
             }
@@ -96,6 +104,7 @@ fun MapBoxMapComponent(
             emptyList()
         }
     }
+
     MapboxMap(
         modifier = modifier,
         mapState = mapState,
@@ -119,7 +128,6 @@ fun MapBoxMapComponent(
                 },
                 topSlot = {
                     if (routePoints.size >= 2) {
-                        // Граница маршрута
                         PolylineAnnotation(points = routePoints) {
                             lineWidth = 8.0
                             lineJoin = LineJoin.ROUND
@@ -127,7 +135,6 @@ fun MapBoxMapComponent(
                             lineEmissiveStrength = 1.0
                         }
 
-                        // Основная линия маршрута
                         PolylineAnnotation(points = routePoints) {
                             lineWidth = 8.0
                             lineJoin = LineJoin.ROUND

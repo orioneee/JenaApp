@@ -58,15 +58,16 @@ import com.oriooneee.jet.navigation.presentation.NavigationViewModel
 import com.oriooneee.jet.navigation.presentation.navigation.LocalNavController
 import com.oriooneee.jet.navigation.presentation.navigation.Route
 import com.oriooneee.jet.navigation.presentation.screen.components.NavigationControls
-import com.oriooneee.jet.navigation.presentation.screen.components.RouteSelectionBottomSheet
 import com.oriooneee.jet.navigation.presentation.screen.map.ZoomableMapCanvas
 import com.oriooneee.jet.navigation.presentation.screen.transitions.TransitionScreen
 import com.oriooneee.jet.navigation.presentation.screen.transitions.TransitionToBuildingScreen
 import com.oriooneee.jet.navigation.presentation.screen.transitions.TransitionToInDoorScreen
 import com.oriooneee.jet.navigation.presentation.screen.transitions.TransitionToOutDoorScreen
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import org.koin.compose.viewmodel.koinViewModel
+import kotlin.time.Duration.Companion.seconds
 
 const val KEY_SELECTED_START_NODE = "selected_start_node"
 const val KEY_SELECTED_END_NODE = "selected_end_node"
@@ -78,6 +79,19 @@ fun NavigationScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val currentStep = uiState.currentStep
+    var isHiddenMapCompoent by remember { mutableStateOf(false) }
+    var shouldHideMap by remember { mutableStateOf(false) }
+    LaunchedEffect(isHiddenMapCompoent) {
+        if (isHiddenMapCompoent && currentStep is NavigationStep.OutDoorMaps) {
+            shouldHideMap = true
+            delay(1.seconds)
+            isHiddenMapCompoent = false
+            shouldHideMap = false
+        } else {
+            shouldHideMap = false
+            isHiddenMapCompoent = false
+        }
+    }
 
     val planColor = MaterialTheme.colorScheme.onSurface
     val planLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
@@ -86,8 +100,6 @@ fun NavigationScreen(
     val endNodeColor = MaterialTheme.colorScheme.primary
     val navController = LocalNavController.current
     var mapHeight by remember { mutableStateOf(0.dp) }
-
-    var showRouteSelection by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         navController.currentBackStackEntryFlow.collect {
@@ -120,9 +132,6 @@ fun NavigationScreen(
     BoxWithConstraints {
         val isLargeScreen = maxWidth >= 650.dp
         var isPanelExpanded by remember { mutableStateOf(true) }
-        val maxHeightForBottomSheet = (maxHeight - (mapHeight + 80.dp)).takeIf {
-            mapHeight > 0.dp
-        } ?: 180.dp
 
         Scaffold { paddingValues ->
             Column(
@@ -203,15 +212,17 @@ fun NavigationScreen(
 
                                     is NavigationStep.OutDoorMaps -> {
                                         val density = LocalDensity.current
-                                        MapComponent(
-                                            step = step,
-                                            isDarkTheme = isDarkTheme,
-                                            modifier = Modifier.onGloballyPositioned {
-                                                mapHeight = with(density) {
-                                                    it.size.height.toDp()
+                                        if(!shouldHideMap){
+                                            MapComponent(
+                                                step = step,
+                                                isDarkTheme = isDarkTheme,
+                                                modifier = Modifier.onGloballyPositioned {
+                                                    mapHeight = with(density) {
+                                                        it.size.height.toDp()
+                                                    }
                                                 }
-                                            }
-                                        )
+                                            )
+                                        }
                                     }
 
                                     is NavigationStep.TransitionToInDoor -> {
@@ -299,6 +310,7 @@ fun NavigationScreen(
                             endNode = uiState.endNode,
                             isLoading = uiState.isLoading,
                             onSelectStart = {
+                                isHiddenMapCompoent = true
                                 navController.navigate(
                                     Route.SelectDestination(
                                         isStartNode = true,
@@ -307,6 +319,7 @@ fun NavigationScreen(
                                 )
                             },
                             onSelectEnd = {
+                                isHiddenMapCompoent = true
                                 navController.navigate(
                                     Route.SelectDestination(
                                         isStartNode = false,
@@ -318,7 +331,10 @@ fun NavigationScreen(
                             isExpanded = isPanelExpanded,
                             isVertical = !isLargeScreen,
                             availableRoutesCount = uiState.availableRoutes.size,
-                            onOpenRouteSelection = { showRouteSelection = true },
+                            onOpenRouteSelection = {
+                                isHiddenMapCompoent = true
+                                navController.navigate(Route.SelectRoute)
+                            },
                             isDarkMode = isDarkTheme
                         )
                     }
@@ -326,19 +342,5 @@ fun NavigationScreen(
             }
         }
 
-        if (showRouteSelection && uiState.availableRoutes.size > 1) {
-            RouteSelectionBottomSheet(
-                routes = uiState.availableRoutes,
-                selectedRoute = uiState.routeStats,
-                isDarkMode = isDarkTheme,
-                maxHeightForBottomSheet = maxHeightForBottomSheet,
-                onRouteSelected = { route ->
-                    viewModel.selectRoute(route)
-                    showRouteSelection = false
-                },
-                isCurrentStepMap = currentStep is NavigationStep.OutDoorMaps,
-                onDismiss = { showRouteSelection = false }
-            )
-        }
     }
 }

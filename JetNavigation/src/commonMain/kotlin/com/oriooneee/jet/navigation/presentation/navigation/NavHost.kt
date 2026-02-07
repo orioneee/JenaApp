@@ -9,6 +9,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
@@ -18,9 +21,12 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.oriooneee.jet.navigation.koin.IsolatedContext
 import com.oriooneee.jet.navigation.koin.initializeIfCan
+import com.oriooneee.jet.navigation.presentation.NavigationViewModel
 import com.oriooneee.jet.navigation.presentation.screen.NavigationScreen
 import com.oriooneee.jet.navigation.presentation.selectdestination.SelectDestinationScreen
+import com.oriooneee.jet.navigation.presentation.selectroute.SelectRouteScreen
 import org.koin.compose.KoinIsolatedContext
+import org.koin.compose.viewmodel.koinViewModel
 
 val LocalNavController = staticCompositionLocalOf<NavController> {
     error("No NavController provided")
@@ -83,6 +89,40 @@ fun NavigationApp(
                             isSelectedStartNode = route.isSelectedStartNode,
                             isStartNode = isStartNode,
                             isDarkTheme = isDarkTheme
+                        )
+                    }
+                }
+
+                composable<Route.SelectRoute>(
+                    enterTransition = {
+                        slideInVertically(
+                            initialOffsetY = { it },
+                            animationSpec = tween(300)
+                        ) + fadeIn(animationSpec = tween(300))
+                    },
+                    popExitTransition = {
+                        slideOutVertically(
+                            targetOffsetY = { it },
+                            animationSpec = tween(300)
+                        ) + fadeOut(animationSpec = tween(300))
+                    }
+                ) { backStackEntry ->
+                    val parentEntry = remember(backStackEntry) {
+                        navController.getBackStackEntry(Route.NavigationScreen)
+                    }
+                    val viewModel: NavigationViewModel = koinViewModel(viewModelStoreOwner = parentEntry)
+                    val uiState by viewModel.uiState.collectAsState()
+
+                    Surface(modifier = Modifier.fillMaxSize()) {
+                        SelectRouteScreen(
+                            routes = uiState.availableRoutes,
+                            selectedRoute = uiState.routeStats,
+                            isDarkMode = isDarkTheme,
+                            onRouteSelected = { selectedRoute ->
+                                viewModel.selectRoute(selectedRoute)
+                                navController.popBackStack()
+                            },
+                            onClose = { navController.popBackStack() }
                         )
                     }
                 }

@@ -12,4 +12,7 @@ sealed interface Route {
         val isStartNode: Boolean,
         val isSelectedStartNode: Boolean
     ) : Route
+
+    @Serializable
+    data object SelectRoute : Route
 }

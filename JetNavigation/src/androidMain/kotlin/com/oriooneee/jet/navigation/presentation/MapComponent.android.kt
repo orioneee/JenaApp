@@ -8,7 +8,8 @@ import com.oriooneee.jet.navigation.domain.entities.NavigationStep
 actual fun MapComponent(
     modifier: Modifier,
     step: NavigationStep.OutDoorMaps?,
-    isDarkTheme: Boolean
+    isDarkTheme: Boolean,
+    isStatic: Boolean
 ) {
     MapBoxMapComponent(
         modifier = modifier,

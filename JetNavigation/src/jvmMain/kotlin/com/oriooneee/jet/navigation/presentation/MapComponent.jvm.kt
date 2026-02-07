@@ -41,96 +41,105 @@ var isInitialized by mutableStateOf(false)
 actual fun MapComponent(
     modifier: Modifier,
     step: NavigationStep.OutDoorMaps?,
-    isDarkTheme: Boolean
+    isDarkTheme: Boolean,
+    isStatic: Boolean
 ) {
-    var loadingStatus by remember { mutableStateOf("Initializing...") }
-    var downloadProgress by remember { mutableFloatStateOf(0f) }
-    var initializationError by remember { mutableStateOf<String?>(null) }
-    var restartRequired by remember { mutableStateOf(false) }
+    if(isStatic){
+        StaticImageMap(
+            modifier = modifier,
+            step = step,
+            isDarkTheme = isDarkTheme
+        )
+    } else{
+        var loadingStatus by remember { mutableStateOf("Initializing...") }
+        var downloadProgress by remember { mutableFloatStateOf(0f) }
+        var initializationError by remember { mutableStateOf<String?>(null) }
+        var restartRequired by remember { mutableStateOf(false) }
 
-    val pathPointsJson = remember(step) {
-        step?.path?.joinToString(prefix = "[", postfix = "]") { "[${it.longitude}, ${it.latitude}]" } ?: "[]"
-    }
+        val pathPointsJson = remember(step) {
+            step?.path?.joinToString(prefix = "[", postfix = "]") { "[${it.longitude}, ${it.latitude}]" } ?: "[]"
+        }
 
-    val mapHtml = remember(pathPointsJson, isDarkTheme) {
-        getMapboxHtml(BuildConfig.MAPS_API_KEY, pathPointsJson, isDarkTheme)
-    }
+        val mapHtml = remember(pathPointsJson, isDarkTheme) {
+            getMapboxHtml(BuildConfig.MAPBOX_API_KEY, pathPointsJson, isDarkTheme, isStatic)
+        }
 
-    LaunchedEffect(Unit) {
-        if (!isInitialized) {
-            withContext(Dispatchers.IO) {
-                try {
-                    KCEF.init(
-                        builder = {
-                            installDir(File("kcef-bundle"))
-                            progress {
-                                onLocating {
-                                    loadingStatus = "Locating existing installation..."
+        LaunchedEffect(Unit) {
+            if (!isInitialized) {
+                withContext(Dispatchers.IO) {
+                    try {
+                        KCEF.init(
+                            builder = {
+                                installDir(File("kcef-bundle"))
+                                progress {
+                                    onLocating {
+                                        loadingStatus = "Locating existing installation..."
+                                    }
+                                    onDownloading {
+                                        loadingStatus = "Downloading Map Components..."
+                                        downloadProgress = max(it, 0f)
+                                    }
+                                    onExtracting {
+                                        loadingStatus = "Extracting packages..."
+                                    }
+                                    onInstall {
+                                        loadingStatus = "Installing..."
+                                    }
+                                    onInitializing {
+                                        loadingStatus = "Initializing Engine..."
+                                    }
+                                    onInitialized {
+                                        loadingStatus = "Ready"
+                                        isInitialized = true
+                                    }
                                 }
-                                onDownloading {
-                                    loadingStatus = "Downloading Map Components..."
-                                    downloadProgress = max(it, 0f)
+                                settings {
+                                    cachePath = File("cache").absolutePath
                                 }
-                                onExtracting {
-                                    loadingStatus = "Extracting packages..."
-                                }
-                                onInstall {
-                                    loadingStatus = "Installing..."
-                                }
-                                onInitializing {
-                                    loadingStatus = "Initializing Engine..."
-                                }
-                                onInitialized {
-                                    loadingStatus = "Ready"
-                                    isInitialized = true
-                                }
+                            },
+                            onError = {
+                                it?.printStackTrace()
+                                initializationError = it?.localizedMessage ?: "Unknown KCEF Error"
+                            },
+                            onRestartRequired = {
+                                restartRequired = true
                             }
-                            settings {
-                                cachePath = File("cache").absolutePath
-                            }
-                        },
-                        onError = {
-                            it?.printStackTrace()
-                            initializationError = it?.localizedMessage ?: "Unknown KCEF Error"
-                        },
-                        onRestartRequired = {
-                            restartRequired = true
-                        }
-                    )
-                } catch (e: Exception) {
-                    initializationError = e.localizedMessage
+                        )
+                    } catch (e: Exception) {
+                        initializationError = e.localizedMessage
+                    }
                 }
             }
         }
-    }
 
-    Column(modifier = modifier) {
-        when {
-            restartRequired -> {
-                ErrorView("Restart application to complete installation.")
-            }
-            initializationError != null -> {
-                ErrorView("Map initialization error: $initializationError")
-            }
-            !isInitialized -> {
-                DownloadingLoader(status = loadingStatus, progress = downloadProgress)
-            }
-            else -> {
-                val state = rememberWebViewStateWithHTMLData(data = mapHtml)
+        Column(modifier = modifier) {
+            when {
+                restartRequired -> {
+                    ErrorView("Restart application to complete installation.")
+                }
+                initializationError != null -> {
+                    ErrorView("Map initialization error: $initializationError")
+                }
+                !isInitialized -> {
+                    DownloadingLoader(status = loadingStatus, progress = downloadProgress)
+                }
+                else -> {
+                    val state = rememberWebViewStateWithHTMLData(data = mapHtml)
 
-                if (state.loadingState is LoadingState.Loading) {
-                    LinearProgressIndicator(
-                        progress = { (state.loadingState as? LoadingState.Loading)?.progress ?: 0f },
-                        modifier = Modifier.fillMaxWidth(),
-                        color = MaterialTheme.colorScheme.secondary
+                    if (state.loadingState is LoadingState.Loading) {
+                        LinearProgressIndicator(
+                            progress = { (state.loadingState as? LoadingState.Loading)?.progress ?: 0f },
+                            modifier = Modifier.fillMaxWidth(),
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+
+                    WebView(
+                        state = state,
+                        modifier = Modifier
+                            .fillMaxSize(),
                     )
                 }
-
-                WebView(
-                    state = state,
-                    modifier = Modifier
-                        .fillMaxSize(),
-                )
             }
         }
     }
