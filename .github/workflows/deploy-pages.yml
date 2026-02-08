@@ -35,6 +35,9 @@ jobs:
       - name: Build WASM browser distribution
         env:
           MAPS_API_KEY: ${{ secrets.MAPS_API_KEY }}
+          GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+          API_KEY: ${{ secrets.API_KEY }}
+          BASE_URL: ${{ secrets.BASE_URL }}
         run: ./gradlew wasmJsBrowserDistribution
 
       - name: Upload artifact for GitHub Pages
