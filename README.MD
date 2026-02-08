@@ -2,14 +2,14 @@
 
 # 🧭 JetNavigation
 
-**Kotlin Multiplatform library for hybrid indoor/outdoor navigation and routing**
+**Kotlin Multiplatform indoor navigation app for VNTU (Vinnytsia National Technical University) campus**
 
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.1.x-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org)
 [![Compose Multiplatform](https://img.shields.io/badge/Compose_Multiplatform-1.7.x-4285F4?logo=jetpackcompose&logoColor=white)](https://www.jetbrains.com/compose-multiplatform/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS%20%7C%20Desktop%20%7C%20Web-blue)]()
 
-*Navigate between buildings, floors, and outdoors — all in one solution*
+*Navigate between VNTU buildings, floors, and campus — all in one app*
 
 </div>
 
@@ -20,7 +20,6 @@
 - [About](#-about)
 - [Features](#-features)
 - [Supported Platforms](#-supported-platforms)
-- [Installation](#-installation)
 - [Quick Start](#-quick-start)
 - [Configuration](#-configuration)
 - [Running the Sample App](#-running-the-sample-app)
@@ -32,17 +31,17 @@
 
 ## 🎯 About
 
-**JetNavigation** is a cross-platform Kotlin Multiplatform library that solves the problem of **hybrid navigation**: seamless routing inside buildings (with support for multiple floors and buildings) and outdoors with GPS map integration.
+**JetNavigation** is a cross-platform Kotlin Multiplatform application designed specifically for **indoor navigation across the VNTU (Vinnytsia National Technical University) campus**. It provides seamless routing inside university buildings with support for multiple floors and buildings, as well as outdoor transitions between them.
 
-### Why do you need this?
+### How does it work?
 
-Imagine a university campus, business center, or shopping mall — a user needs to get from Room 305 in Building A to Room 112 in Building B. JetNavigation will build the route:
+A student needs to get from Room 305 in Building 1 to Room 112 in Building 3. JetNavigation will build the route:
 
-1. 🏢 Navigate through the floor inside Building A
+1. 🏢 Navigate through the floor inside Building 1
 2. 🔽 Go down to the 1st floor
-3. 🚶 Exit to the outdoors
-4. 🗺️ Outdoor route to Building B
-5. 🏢 Enter Building B and navigate to the destination room
+3. 🚶 Exit to the campus
+4. 🗺️ Outdoor route across the campus to Building 3
+5. 🏢 Enter Building 3 and navigate to the destination room
 
 ---
 
@@ -68,32 +67,6 @@ Imagine a university campus, business center, or shopping mall — a user needs 
 | 🍎 iOS | ✅ | iOS 13+ |
 | 🖥️ Desktop (JVM) | ✅ | Java 21 |
 | 🌐 Web (WASM) | ✅ | Modern browsers |
-
----
-
-## 📦 Installation
-
-### Gradle (Kotlin DSL)
-
-```kotlin
-// settings.gradle.kts
-repositories {
-    mavenCentral()
-}
-
-// build.gradle.kts
-dependencies {
-    implementation("com.oriooneee.jet.navigation:JetNavigation:1.0.0")
-}
-```
-
-### Gradle (Groovy)
-
-```groovy
-dependencies {
-    implementation 'com.oriooneee.jet.navigation:JetNavigation:1.0.0'
-}
-```
 
 ---
 
