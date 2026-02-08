@@ -53,3 +53,6 @@ actual fun MapComponent(
         }
     }
 }
+
+internal actual val BuildConfig.MAPBOX_TOKEN: String
+    get() = BuildConfig.MAPBOX_API_KEY_WEB

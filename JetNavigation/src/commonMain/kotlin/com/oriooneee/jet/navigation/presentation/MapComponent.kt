@@ -30,9 +30,8 @@ import com.oriooneee.jet.navigation.buildconfig.BuildConfig
 import com.oriooneee.jet.navigation.data.API_KEY
 import com.oriooneee.jet.navigation.domain.entities.Coordinates
 import com.oriooneee.jet.navigation.domain.entities.NavigationStep
-
+internal expect val BuildConfig.MAPBOX_TOKEN: String
 fun getMapboxHtml(
-    accessToken: String,
     pathPoints: String,
     isDarkTheme: Boolean,
     isStatic: Boolean
@@ -89,7 +88,7 @@ fun getMapboxHtml(
         <body>
             <div id="map"></div>
             <script>
-                mapboxgl.accessToken = '$accessToken';
+                mapboxgl.accessToken = '${BuildConfig.MAPBOX_TOKEN}';
                 const coordinates = $pathPoints;
                 const center = coordinates.length > 0 ? coordinates[0] : [0, 0];
 

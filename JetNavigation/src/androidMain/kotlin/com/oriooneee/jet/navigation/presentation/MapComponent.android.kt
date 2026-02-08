@@ -2,6 +2,7 @@ package com.oriooneee.jet.navigation.presentation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.oriooneee.jet.navigation.buildconfig.BuildConfig
 import com.oriooneee.jet.navigation.domain.entities.NavigationStep
 
 @Composable
@@ -23,3 +24,6 @@ actual fun MapComponent(
 //        isDarkTheme = isDarkTheme
 //    )
 }
+
+internal actual val BuildConfig.MAPBOX_TOKEN: String
+    get() = BuildConfig.MAPBOX_API_KEY_ANDROID

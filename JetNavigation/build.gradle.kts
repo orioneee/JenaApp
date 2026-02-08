@@ -158,7 +158,11 @@ fun String.getAsEnv(): String {
 buildConfig {
     packageName("com.oriooneee.jet.navigation.buildconfig")
 
-    val mapBoxApiKey = "MAPBOX_API_KEY".getAsEnv()
+    val mapBoxApiKeyAndroid = "MAPBOX_KEY_ANDROID".getAsEnv()
+    val mapBoxApiKeyIos = "MAPBOX_KEY_IOS".getAsEnv()
+    val mapBoxApiKeyDesktop = "MAPBOX_KEY_DESKTOP".getAsEnv()
+    val mapBoxApiKeyWeb = "MAPBOX_KEY_WEB".getAsEnv()
+
     val googleMapsApiKey = "GOOGLE_MAPS_API_KEY".getAsEnv()
     val apiKeyAndroid = "API_KEY_ANDROID".getAsEnv()
     val apiKeyIos = "API_KEY_IOS".getAsEnv()
@@ -166,29 +170,45 @@ buildConfig {
     val apiKeyWeb = "API_KEY_WEB".getAsEnv()
 
     val baseUrl = "BASE_URL".getAsEnv()
+
     require(googleMapsApiKey.isNotBlank()) { "GOOGLE_MAPS_API_KEY is not set in environment variables or local.properties" }
-    require(mapBoxApiKey.isNotBlank()) { "MAPBOX_API_KEY is not set in environment variables or local.properties" }
+
     require(baseUrl.isNotBlank()) { "BASE_URL is not set in environment variables or local.properties" }
+
     require(apiKeyAndroid.isNotBlank()) { "API_KEY_ANDROID is not set in environment variables or local.properties" }
     require(apiKeyIos.isNotBlank()) { "API_KEY_IOS is not set in environment variables or local.properties" }
     require(apiKeyDesktop.isNotBlank()) { "API_KEY_DESKTOP is not set in environment variables or local.properties" }
     require(apiKeyWeb.isNotBlank()) { "API_KEY_WEB is not set in environment variables or local.properties" }
 
+    require(mapBoxApiKeyAndroid.isNotBlank()) { "MAPBOX_API_KEY_ANDROID is not set in environment variables or local.properties" }
+    require(mapBoxApiKeyIos.isNotBlank()) { "MAPBOX_API_KEY_IOS is not set in environment variables or local.properties" }
+    require(mapBoxApiKeyDesktop.isNotBlank()) { "MAPBOX_API_KEY_DESKTOP is not set in environment variables or local.properties" }
+    require(mapBoxApiKeyWeb.isNotBlank()) { "MAPBOX_API_KEY_WEB is not set in environment variables or local.properties" }
+
+
     println("GOOGLE_MAPS_API_KEY is set: ${googleMapsApiKey.length}")
-    println("MAPBOX_API_KEY is set: ${mapBoxApiKey.length}")
     println("BASE_URL is set: ${baseUrl.length}")
     println("API_KEY_ANDROID is set: ${apiKeyAndroid.length}")
     println("API_KEY_IOS is set: ${apiKeyIos.length}")
     println("API_KEY_DESKTOP is set: ${apiKeyDesktop.length}")
     println("API_KEY_WEB is set: ${apiKeyWeb.length}")
 
-    buildConfigField("String", "MAPBOX_API_KEY", "\"$mapBoxApiKey\"")
+    println("MAPBOX_API_KEY_ANDROID is set: ${mapBoxApiKeyAndroid.length}")
+    println("MAPBOX_API_KEY_IOS is set: ${mapBoxApiKeyIos.length}")
+    println("MAPBOX_API_KEY_DESKTOP is set: ${mapBoxApiKeyDesktop.length}")
+    println("MAPBOX_API_KEY_WEB is set: ${mapBoxApiKeyWeb.length}")
+
 //    buildConfigField("String", "GOOGLE_MAPS_API_KEY", "\"$googleMapsApiKey\"")
     buildConfigField("String", "BASE_URL", "\"$baseUrl\"")
 
-buildConfigField("String", "API_KEY_ANDROID", "\"$apiKeyAndroid\"")
+    buildConfigField("String", "API_KEY_ANDROID", "\"$apiKeyAndroid\"")
     buildConfigField("String", "API_KEY_IOS", "\"$apiKeyIos\"")
     buildConfigField("String", "API_KEY_DESKTOP", "\"$apiKeyDesktop\"")
     buildConfigField("String", "API_KEY_WEB", "\"$apiKeyWeb\"")
+
+    buildConfigField("String", "MAPBOX_API_KEY_ANDROID", "\"$mapBoxApiKeyAndroid\"")
+    buildConfigField("String", "MAPBOX_API_KEY_IOS", "\"$mapBoxApiKeyIos\"")
+    buildConfigField("String", "MAPBOX_API_KEY_DESKTOP", "\"$mapBoxApiKeyDesktop\"")
+    buildConfigField("String", "MAPBOX_API_KEY_WEB", "\"$mapBoxApiKeyWeb\"")
 }
 
