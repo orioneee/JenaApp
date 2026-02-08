@@ -182,7 +182,12 @@ buildConfig {
                 ?.readLines()
                 ?.firstOrNull { it.startsWith("BASE_URL=") }
                 ?.substringAfter("=")
+            ?: ""
     }.get()
+    require(googleMapsApiKey.isNotBlank()) { "GOOGLE_MAPS_API_KEY is not set in environment variables or local.properties" }
+    require(mapBoxApiKey.isNotBlank()) { "MAPBOX_API_KEY is not set in environment variables or local.properties" }
+    require(apiKey.isNotBlank()) { "API_KEY is not set in environment variables or local.properties" }
+    require(baseUrl.isNotBlank()) { "BASE_URL is not set in environment variables or local.properties" }
     println("GOOGLE_MAPS_API_KEY is set: ${googleMapsApiKey.length}")
     println("MAPBOX_API_KEY is set: ${mapBoxApiKey.length}")
     println("API_KEY is set: ${apiKey.length}")
