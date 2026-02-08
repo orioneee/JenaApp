@@ -51,9 +51,8 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
 
-            implementation("io.coil-kt.coil3:coil-compose:3.3.0")
-            implementation("io.coil-kt.coil3:coil-network-ktor3:3.3.0")
-
+            implementation(libs.coil.compose)
+            implementation(libs.coil.network.ktor3)
 
 
         }
@@ -166,11 +165,31 @@ buildConfig {
                 ?.firstOrNull { it.startsWith("GOOGLE_MAPS_API_KEY=") }
                 ?.substringAfter("=")
             ?: ""
-    }.getOrElse("")
+    }.get()
+    val apiKey = providers.provider {
+        System.getenv("API_KEY")
+            ?: rootProject.file("local.properties")
+                .takeIf { it.exists() }
+                ?.readLines()
+                ?.firstOrNull { it.startsWith("API_KEY=") }
+                ?.substringAfter("=")
+            ?: ""
+    }.get()
+    val baseUrl = providers.provider {
+        System.getenv("BASE_URL")
+            ?: rootProject.file("local.properties")
+                .takeIf { it.exists() }
+                ?.readLines()
+                ?.firstOrNull { it.startsWith("BASE_URL=") }
+                ?.substringAfter("=")
+    }.get()
     println("GOOGLE_MAPS_API_KEY is set: ${googleMapsApiKey.length}")
     println("MAPBOX_API_KEY is set: ${mapBoxApiKey.length}")
+    println("API_KEY is set: ${apiKey.length}")
 
     buildConfigField("String", "MAPBOX_API_KEY", "\"$mapBoxApiKey\"")
     buildConfigField("String", "GOOGLE_MAPS_API_KEY", "\"$googleMapsApiKey\"")
+    buildConfigField("String", "API_KEY", "\"$apiKey\"")
+    buildConfigField("String", "BASE_URL", "\"$baseUrl\"")
 }
 

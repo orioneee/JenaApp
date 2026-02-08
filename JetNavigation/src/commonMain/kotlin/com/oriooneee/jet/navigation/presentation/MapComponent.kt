@@ -212,35 +212,29 @@ fun encodePolyline(coordinates: List<Coordinates>): String {
 
 fun getStaticMapUrl(
     step: NavigationStep.OutDoorMaps,
-    accessToken: String,
     isDarkTheme: Boolean
 ): String {
     if (step.path.isEmpty()) return ""
 
-    val styleId = if (isDarkTheme) "mapbox/dark-v11" else "mapbox/streets-v12"
-    val colorHex = "4285F4"
-    val width = 500
-    val height = 500
-
-    val rawPolyline = encodePolyline(step.path)
-    val encodedPath = rawPolyline.escapeUrlParam()
-
-    val pathOverlay = "path-5+$colorHex-1($encodedPath)"
-
     val startPoint = step.path.first()
     val endPoint = step.path.last()
 
-    val startPin = "pin-s+$colorHex(${startPoint.longitude},${startPoint.latitude})"
+    val encodedPath = encodePolyline(step.path).escapeUrlParam()
 
-    val markerImageUrl = "https://raw.githubusercontent.com/orioneee/JetNavigation/refs/heads/main/JetNavigation/src/commonMain/composeResources/files/marker.png"
-    val encodedMarkerUrl = markerImageUrl.escapeUrlParam()
+    val baseUrl = BuildConfig.BASE_URL.trimEnd('/')
+    val token = BuildConfig.API_KEY
 
-    val endPin = "url-$encodedMarkerUrl(${endPoint.longitude},${endPoint.latitude})"
-
-    val overlays = "$pathOverlay,$endPin,$startPin"
-    val bounds = "[28.40455,49.22823,28.41498,49.2358]"
-
-    return "https://api.mapbox.com/styles/v1/$styleId/static/$overlays/$bounds/${width}x${height}@2x?access_token=$accessToken&attribution=false&logo=false"
+    return buildString {
+        append(baseUrl)
+        append("/api/map/?")
+        append("token=").append(token)
+        append("&start_lat=").append(startPoint.latitude)
+        append("&start_lon=").append(startPoint.longitude)
+        append("&end_lat=").append(endPoint.latitude)
+        append("&end_lon=").append(endPoint.longitude)
+        append("&is_dark=").append(isDarkTheme)
+        append("&path=").append(encodedPath)
+    }
 }
 
 private fun String.escapeUrlParam(): String {
@@ -266,7 +260,6 @@ fun StaticImageMap(
         step?.let {
             getStaticMapUrl(
                 step = it,
-                accessToken = BuildConfig.MAPBOX_API_KEY,
                 isDarkTheme = isDarkTheme
             )
         }

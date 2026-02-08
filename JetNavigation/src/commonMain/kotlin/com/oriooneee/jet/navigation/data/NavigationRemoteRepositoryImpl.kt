@@ -1,5 +1,6 @@
 package com.oriooneee.jet.navigation.data
 
+import com.oriooneee.jet.navigation.buildconfig.BuildConfig
 import com.oriooneee.jet.navigation.domain.entities.Coordinates
 import com.oriooneee.jet.navigation.domain.entities.graph.MasterNavigation
 import com.oriooneee.jet.navigation.domain.entities.weather.WeatherResponse
@@ -7,9 +8,12 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
+import io.ktor.client.request.parameter
 import io.ktor.http.ContentType
 import io.ktor.http.URLProtocol
+import io.ktor.http.appendPathSegments
 import io.ktor.http.encodedPath
+import io.ktor.http.takeFrom
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
@@ -41,9 +45,13 @@ class NavigationRemoteRepositoryImpl(
         }
 
         return runCatching {
-            client
-                .get("https://raw.githubusercontent.com/orioneee/OrimapParcer/master/master_navigation.json")
-                .body<MasterNavigation>()
+            client.get {
+                url {
+                    takeFrom(BuildConfig.BASE_URL)
+                    appendPathSegments("api", "navigation", "")
+                    parameter("token", BuildConfig.API_KEY)
+                }
+            }.body<MasterNavigation>()
         }.onSuccess {
             cachedNavigation = it
         }.onFailure {

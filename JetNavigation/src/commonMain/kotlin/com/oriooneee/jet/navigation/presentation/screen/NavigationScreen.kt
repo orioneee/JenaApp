@@ -25,16 +25,21 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -45,12 +50,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.oriooneee.jet.navigation.domain.entities.NavigationStep
 import com.oriooneee.jet.navigation.presentation.FloorAndBuildingBadge
 import com.oriooneee.jet.navigation.presentation.MapComponent
@@ -71,8 +79,9 @@ import kotlin.time.Duration.Companion.seconds
 
 const val KEY_SELECTED_START_NODE = "selected_start_node"
 const val KEY_SELECTED_END_NODE = "selected_end_node"
-expect val shouldHideMapForAnimations: Boolean
+expect val isWebOrDesktop: Boolean
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NavigationScreen(
     isDarkTheme: Boolean,
@@ -83,7 +92,7 @@ fun NavigationScreen(
     var isHiddenMapCompoent by remember { mutableStateOf(false) }
     var shouldHideMap by remember { mutableStateOf(false) }
     LaunchedEffect(isHiddenMapCompoent) {
-        if (isHiddenMapCompoent && currentStep is NavigationStep.OutDoorMaps && shouldHideMapForAnimations) {
+        if (isHiddenMapCompoent && currentStep is NavigationStep.OutDoorMaps && isWebOrDesktop) {
             shouldHideMap = true
             delay(1.seconds)
             isHiddenMapCompoent = false
@@ -134,12 +143,48 @@ fun NavigationScreen(
         val isLargeScreen = maxWidth >= 650.dp
         var isPanelExpanded by remember { mutableStateOf(true) }
 
-        Scaffold { paddingValues ->
+        Scaffold(
+            topBar = {
+                CenterAlignedTopAppBar(
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        containerColor = Color.Transparent
+                    ),
+                    navigationIcon = {
+                        IconButton(onClick = {}) {
+                            Icon(Icons.Default.ArrowBack, contentDescription = null)
+                        }
+                    },
+                    title = {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = "JetNavigation",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                            Text(
+                                text = "Powered by MapBox",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                lineHeight = 10.sp
+                            )
+                        }
+                    },
+                    modifier = Modifier.clip(
+                        RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp)
+                    )
+                )
+            },
+        ) { paddingValues ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .padding(paddingValues)
             ) {
+
                 Card(
                     modifier = Modifier
                         .statusBarsPadding()
@@ -148,7 +193,7 @@ fun NavigationScreen(
                         .padding(
                             start = 16.dp,
                             end = 16.dp,
-                            top = 0.dp,
+                            top = 16.dp,
                             bottom = 16.dp
                         ),
                     shape = RoundedCornerShape(24.dp),
@@ -213,7 +258,7 @@ fun NavigationScreen(
 
                                     is NavigationStep.OutDoorMaps -> {
                                         val density = LocalDensity.current
-                                        if(!shouldHideMap){
+                                        if (!shouldHideMap) {
                                             MapComponent(
                                                 step = step,
                                                 isDarkTheme = isDarkTheme,

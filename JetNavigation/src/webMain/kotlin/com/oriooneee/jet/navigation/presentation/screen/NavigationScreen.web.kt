@@ -1,4 +1,4 @@
 package com.oriooneee.jet.navigation.presentation.screen
 
-actual val shouldHideMapForAnimations: Boolean
+actual val isWebOrDesktop: Boolean
     get() = true
