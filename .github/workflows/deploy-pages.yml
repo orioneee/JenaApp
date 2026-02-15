@@ -46,7 +46,7 @@ jobs:
           MAPBOX_KEY_DESKTOP: "not_valid"
           MAPBOX_KEY_ANDROID: "not_valid"
           MAPBOX_KEY_IOS: "not_valid"
-        run: ./gradlew wasmJsBrowserDistribution
+        run: ./gradlew kotlinWasmUpgradeYarnLock wasmJsBrowserDistribution
 
       - name: Upload artifact for GitHub Pages
         uses: actions/upload-pages-artifact@v3
