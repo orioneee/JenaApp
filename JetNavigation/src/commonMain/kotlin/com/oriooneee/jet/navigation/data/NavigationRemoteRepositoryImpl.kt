@@ -6,31 +6,16 @@ import com.oriooneee.jet.navigation.domain.entities.graph.MasterNavigation
 import com.oriooneee.jet.navigation.domain.entities.weather.WeatherResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
-import io.ktor.client.request.parameter
-import io.ktor.http.ContentType
 import io.ktor.http.URLProtocol
 import io.ktor.http.appendPathSegments
 import io.ktor.http.encodedPath
 import io.ktor.http.takeFrom
-import io.ktor.serialization.kotlinx.json.json
-import kotlinx.serialization.json.Json
 
 internal expect val BuildConfig.API_KEY: String
 
 class NavigationRemoteRepositoryImpl(
-    private val client: HttpClient = HttpClient {
-        install(ContentNegotiation) {
-            json(
-                Json {
-                    ignoreUnknownKeys = true
-                },
-                contentType = ContentType.Any
-            )
-        }
-    }
-
+    private val client: HttpClient,
 ) : NavigationRemoteRepository {
     companion object {
         val VNTU_COORDINATES = Coordinates(
@@ -51,7 +36,6 @@ class NavigationRemoteRepositoryImpl(
                 url {
                     takeFrom(BuildConfig.BASE_URL)
                     appendPathSegments("api", "navigation", "")
-                    parameter("token", BuildConfig.API_KEY)
                 }
             }.body<MasterNavigation>()
             res

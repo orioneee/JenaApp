@@ -27,9 +27,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.compose.SubcomposeAsyncImage
 import com.oriooneee.jet.navigation.buildconfig.BuildConfig
-import com.oriooneee.jet.navigation.data.API_KEY
 import com.oriooneee.jet.navigation.domain.entities.Coordinates
 import com.oriooneee.jet.navigation.domain.entities.NavigationStep
+import com.oriooneee.jet.navigation.koin.rememberCoilImageLoader
+
 internal expect val BuildConfig.MAPBOX_TOKEN: String
 fun getMapboxHtml(
     pathPoints: String,
@@ -222,12 +223,10 @@ fun getStaticMapUrl(
     val encodedPath = encodePolyline(step.path).escapeUrlParam()
 
     val baseUrl = BuildConfig.BASE_URL.trimEnd('/')
-    val token = BuildConfig.API_KEY
 
     return buildString {
         append(baseUrl)
         append("/api/map/?")
-        append("token=").append(token)
         append("&start_lat=").append(startPoint.latitude)
         append("&start_lon=").append(startPoint.longitude)
         append("&end_lat=").append(endPoint.latitude)
@@ -271,6 +270,7 @@ fun StaticImageMap(
             contentDescription = "Static Map",
             modifier = modifier.fillMaxSize(),
             contentScale = ContentScale.Crop,
+            imageLoader = rememberCoilImageLoader(),
             error = {
                 println("Failed to load static map image url: $imageUrl error: ${it.result.throwable}")
                 Column(
