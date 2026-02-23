@@ -178,7 +178,7 @@ buildConfig {
     val baseUrl = "BASE_URL".getAsEnv()
 
 //    require(googleMapsApiKey.isNotBlank()) { "GOOGLE_MAPS_API_KEY is not set in environment variables or local.properties" }
-
+    val youTrackUrl = "https://jetandroid.youtrack.cloud/form/cc2f9388-c6af-4cf1-9681-d15cc5d44587"
     require(baseUrl.isNotBlank()) { "BASE_URL is not set in environment variables or local.properties" }
 
     require(apiKeyAndroid.isNotBlank()) { "API_KEY_ANDROID is not set in environment variables or local.properties" }
@@ -216,5 +216,6 @@ buildConfig {
     buildConfigField("String", "MAPBOX_API_KEY_IOS", "\"$mapBoxApiKeyIos\"")
     buildConfigField("String", "MAPBOX_API_KEY_DESKTOP", "\"$mapBoxApiKeyDesktop\"")
     buildConfigField("String", "MAPBOX_API_KEY_WEB", "\"$mapBoxApiKeyWeb\"")
+    buildConfigField("String", "YOU_TRACK_URL", "\"$youTrackUrl\"")
 }
 

@@ -72,6 +72,9 @@
     <string name="go_down">Go DOWN</string>
     <string name="to_level_format">to Level %1$d</string>
 
+    <!-- Report Issue -->
+    <string name="report_issue">Report Issue</string>
+
     <!-- RoutePresentation -->
     <string name="via_streets">Via Streets</string>
     <string name="outdoor_route_format">Outdoor route • %1$dm</string>

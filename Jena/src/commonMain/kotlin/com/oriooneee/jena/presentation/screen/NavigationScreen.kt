@@ -8,6 +8,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -21,6 +22,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -37,6 +39,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -53,6 +56,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -72,6 +76,7 @@ import com.oriooneee.jena.presentation.screen.transitions.TransitionToOutDoorScr
 import jena.generated.resources.Res
 import jena.generated.resources.app_name
 import jena.generated.resources.cd_toggle_panel
+import jena.generated.resources.ic_you_track
 import jena.generated.resources.powered_by_mapbox
 import jena.generated.resources.ready_to_navigate
 import jena.generated.resources.ready_to_navigate_desc
@@ -79,6 +84,7 @@ import jena.generated.resources.updated_format
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import kotlin.time.Clock
@@ -220,6 +226,26 @@ fun NavigationScreen(
                                     )
                                 }
                             }
+                        }
+                    },
+                    actions = {
+                        val uriHandler = LocalUriHandler.current
+                        TextButton(
+                            onClick = {
+                                uriHandler.openUri("https://jetandroid.youtrack.cloud/form/40ef57af-8772-4790-88a2-1b0a79fc6f73")
+                            }
+                        ) {
+                            Image(
+                                painter = painterResource(Res.drawable.ic_you_track),
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(Modifier.width(6.dp))
+                            Text(
+                                text = "Bug",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.SemiBold,
+                            )
                         }
                     },
                     modifier = Modifier.clip(
