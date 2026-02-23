@@ -19,6 +19,18 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    env:
+      GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+      BASE_URL: ${{ secrets.BASE_URL }}
+      API_KEY_ANDROID: "not_valid"
+      API_KEY_IOS: "not_valid"
+      API_KEY_DESKTOP: "not_valid"
+      API_KEY_WEB: ${{ secrets.API_KEY_WEB }}
+      MAPBOX_KEY_WEB: ${{ secrets.MAPBOX_KEY_WEB }}
+      MAPBOX_KEY_DESKTOP: "not_valid"
+      MAPBOX_KEY_ANDROID: "not_valid"
+      MAPBOX_KEY_IOS: "not_valid"
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -44,19 +56,6 @@ jobs:
           git push
 
       - name: Build WASM browser distribution
-        env:
-          GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
-          BASE_URL: ${{ secrets.BASE_URL }}
-
-          API_KEY_ANDROID: "not_valid"
-          API_KEY_IOS: "not_valid"
-          API_KEY_DESKTOP: "not_valid"
-          API_KEY_WEB: ${{ secrets.API_KEY_WEB }}
-
-          MAPBOX_KEY_WEB: ${{ secrets.MAPBOX_KEY_WEB }}
-          MAPBOX_KEY_DESKTOP: "not_valid"
-          MAPBOX_KEY_ANDROID: "not_valid"
-          MAPBOX_KEY_IOS: "not_valid"
         run: ./gradlew wasmJsBrowserDistribution
 
       - name: Upload artifact for GitHub Pages
