@@ -29,6 +29,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
+
             implementation(libs.runtime)
             implementation(libs.ui)
             implementation(libs.foundation)
@@ -78,6 +79,7 @@ kotlin {
             implementation(libs.kotlinx.coroutines.swing)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.compose.webview.multiplatform)
+            api("io.github.orioneee:axer:1.2.6")
         }
 
         iosMain.dependencies {

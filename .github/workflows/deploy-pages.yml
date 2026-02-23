@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -32,6 +32,17 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v3
 
+      - name: Upgrade yarn.lock if outdated
+        run: ./gradlew kotlinWasmUpgradeYarnLock
+
+      - name: Commit updated yarn.lock
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add yarn.lock
+          git diff --cached --quiet || git commit -m "chore: update yarn.lock [skip ci]"
+          git push
+
       - name: Build WASM browser distribution
         env:
           GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
@@ -46,7 +57,7 @@ jobs:
           MAPBOX_KEY_DESKTOP: "not_valid"
           MAPBOX_KEY_ANDROID: "not_valid"
           MAPBOX_KEY_IOS: "not_valid"
-        run: ./gradlew kotlinWasmUpgradeYarnLock wasmJsBrowserDistribution
+        run: ./gradlew wasmJsBrowserDistribution
 
       - name: Upload artifact for GitHub Pages
         uses: actions/upload-pages-artifact@v3

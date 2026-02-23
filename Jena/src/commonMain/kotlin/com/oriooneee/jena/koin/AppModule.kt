@@ -12,6 +12,7 @@ import com.oriooneee.jena.data.NavigationRemoteRepository
 import com.oriooneee.jena.data.NavigationRemoteRepositoryImpl
 import com.oriooneee.jena.presentation.NavigationViewModel
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.api.ClientPlugin
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.header
@@ -21,7 +22,7 @@ import kotlinx.serialization.json.Json
 import org.koin.compose.koinInject
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
-
+expect fun pluginsList(): List<ClientPlugin<out Any>>
 object AppModule {
     val module = module {
         single<NavigationRemoteRepository> {
@@ -30,6 +31,9 @@ object AppModule {
         viewModelOf(::NavigationViewModel)
         single {
             HttpClient {
+                pluginsList().forEach { plugin ->
+                    install(plugin)
+                }
                 install(ContentNegotiation) {
                     json(
                         Json {
