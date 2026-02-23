@@ -1,0 +1,81 @@
+<resources>
+    <!-- App -->
+    <string name="app_name">Jena</string>
+    <string name="powered_by_mapbox">Powered by MapBox</string>
+    <string name="updated_format">Updated: %1$s</string>
+
+    <!-- NavigationScreen -->
+    <string name="ready_to_navigate">Ready to Navigate</string>
+    <string name="ready_to_navigate_desc">Select your start and destination points to view the route on the map</string>
+    <string name="cd_toggle_panel">Toggle Panel</string>
+
+    <!-- DestinationInputPanel -->
+    <string name="start_placeholder">Start</string>
+    <string name="destination_placeholder">Destination</string>
+    <string name="cd_swap">Swap</string>
+
+    <!-- NavigationControls -->
+    <string name="cd_change_route">Change route</string>
+    <string name="time_format">%1$d min %2$d sec</string>
+    <string name="distance_format">~%1$d meters</string>
+    <string name="indoor_route_recommended">Indoor route recommended</string>
+    <string name="btn_previous">Previous</string>
+    <string name="btn_next">Next</string>
+
+    <!-- RouteSelectionBottomSheet / SelectRouteScreen -->
+    <string name="choose_route_title">Choose a Route</string>
+    <string name="time_min_format">%1$d min</string>
+    <string name="time_sec_format">%1$d s</string>
+    <string name="steps_count_format">%1$d steps</string>
+    <string name="cd_close">Close</string>
+
+    <!-- TransitionScreens -->
+    <string name="go_up_to">Go Up To</string>
+    <string name="go_down_to">Go Down To</string>
+    <string name="floor_format">Floor %1$d</string>
+    <string name="exiting_building_format">Exiting building %1$d</string>
+    <string name="entering_building_format">Entering building %1$d</string>
+    <string name="building_format">Building %1$d</string>
+    <string name="outside">Outside</string>
+    <string name="exit_the_building">Exit the Building</string>
+    <string name="continue_outdoors">Continue outdoors</string>
+    <string name="enter_building_format">Enter Building %1$d</string>
+    <string name="continue_inside">Continue inside</string>
+
+    <!-- SelectRouteScreen (getStepLabel) -->
+    <string name="step_floor_bldg_format">Floor %1$d, Bldg %2$d</string>
+    <string name="go_up_to_floor_format">Go up to Floor %1$d</string>
+    <string name="go_down_to_floor_format">Go down to Floor %1$d</string>
+    <string name="to_building_format">To Building %1$d</string>
+    <string name="walk_outdoors">Walk Outdoors</string>
+    <string name="exit_building">Exit Building</string>
+
+    <!-- SelectDestinationScreen -->
+    <string name="start_point">Start Point</string>
+    <string name="cd_back">Back</string>
+    <string name="search_placeholder">Search room, hall, etc.</string>
+    <string name="building_filter_format">Building %1$d</string>
+    <string name="floor_filter_format">Floor %1$d</string>
+    <string name="nearest_quick_actions">Nearest Quick Actions</string>
+    <string name="main_entrances">Main Entrances</string>
+    <string name="building_corpus_format">%1$d Building</string>
+    <string name="campus_outdoor">Campus Outdoor</string>
+    <string name="indoor_poi">Indoor Points of Interest</string>
+    <string name="wc">WC</string>
+    <string name="exit_label">Exit</string>
+    <string name="poi_info_format">%1$s (%2$d bld. %3$d fl.)</string>
+
+    <!-- NavigationComponent -->
+    <string name="building_label_format">Building %1$d </string>
+    <string name="floor_label_format">Floor %1$d</string>
+    <string name="go_up">Go UP</string>
+    <string name="go_down">Go DOWN</string>
+    <string name="to_level_format">to Level %1$d</string>
+
+    <!-- RoutePresentation -->
+    <string name="via_streets">Via Streets</string>
+    <string name="outdoor_route_format">Outdoor route • %1$dm</string>
+    <string name="fastest_format">Fastest • %1$dm</string>
+    <string name="direct_route">Direct Route</string>
+    <string name="building_only_format">Building %1$s Only</string>
+</resources>

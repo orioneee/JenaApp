@@ -1,0 +1,688 @@
+package com.oriooneee.jena.presentation.selectdestination
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Class
+import androidx.compose.material.icons.outlined.DirectionsWalk
+import androidx.compose.material.icons.outlined.ExitToApp
+import androidx.compose.material.icons.outlined.Man
+import androidx.compose.material.icons.outlined.Place
+import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material.icons.outlined.Wc
+import androidx.compose.material.icons.outlined.Woman
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.InputChip
+import androidx.compose.material3.InputChipDefaults
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SuggestionChip
+import androidx.compose.material3.SuggestionChipDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.contentColorFor
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import com.oriooneee.jena.data.NavigationRemoteRepository
+import com.oriooneee.jena.domain.entities.graph.InDoorNode
+import com.oriooneee.jena.domain.entities.graph.MasterNavigation
+import com.oriooneee.jena.domain.entities.graph.NavNode
+import com.oriooneee.jena.domain.entities.graph.NodeType
+import com.oriooneee.jena.domain.entities.graph.OutDoorNode
+import com.oriooneee.jena.domain.entities.graph.SelectNodeResult
+import com.oriooneee.jena.presentation.navigation.LocalNavController
+import com.oriooneee.jena.presentation.screen.KEY_SELECTED_END_NODE
+import com.oriooneee.jena.presentation.screen.KEY_SELECTED_START_NODE
+import com.oriooneee.jena.utils.containsAny
+import kotlinx.serialization.json.Json
+import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
+import jena.generated.resources.Res
+import jena.generated.resources.*
+
+val enterColor = Color(0xFF4CAF50).copy(alpha = 0.35f)
+
+/**
+ * Fuzzy search: проверяет что все символы query есть в text в правильном порядке.
+ * "519" найдёт "5119", "5-1-9", "room 519" и т.д.
+ * Возвращает score (чем меньше - тем лучше совпадение), или null если не совпало.
+ */
+private fun fuzzyMatch(query: String, text: String): Int? {
+    if (query.isEmpty()) return 0
+    val queryLower = query.lowercase()
+    val textLower = text.lowercase()
+
+    // Точное совпадение - лучший score
+    if (textLower.contains(queryLower)) return 0
+
+    // Subsequence matching
+    var queryIndex = 0
+    var gaps = 0
+    var lastMatchIndex = -1
+
+    for ((textIndex, char) in textLower.withIndex()) {
+        if (queryIndex < queryLower.length && char == queryLower[queryIndex]) {
+            if (lastMatchIndex >= 0 && textIndex > lastMatchIndex + 1) {
+                gaps += textIndex - lastMatchIndex - 1
+            }
+            lastMatchIndex = textIndex
+            queryIndex++
+        }
+    }
+
+    return if (queryIndex == queryLower.length) gaps + 1 else null
+}
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@Composable
+fun SelectDestinationScreen(
+    isDarkTheme: Boolean,
+    isStartNode: Boolean,
+    isSelectedStartNode: Boolean,
+    onBack: () -> Unit
+) {
+    val navController = LocalNavController.current
+    var masterNavigation by remember { mutableStateOf<MasterNavigation?>(null) }
+    val navigationRemoteRepository: NavigationRemoteRepository = koinInject()
+    var searchQuery by remember { mutableStateOf("") }
+
+    var selectedBuilding by remember { mutableStateOf<Int?>(null) }
+    var selectedFloor by remember { mutableStateOf<Int?>(null) }
+
+    LaunchedEffect(Unit) {
+        masterNavigation = navigationRemoteRepository.getMainNavigation().getOrNull()
+    }
+
+    fun handleSelection(result: SelectNodeResult) {
+        val key = if (isStartNode) KEY_SELECTED_START_NODE else KEY_SELECTED_END_NODE
+        val jsonResult = Json.encodeToString(result)
+        navController.previousBackStackEntry?.savedStateHandle?.set(key, jsonResult)
+        navController.popBackStack()
+    }
+
+    val nodesInfo = remember(masterNavigation) {
+        masterNavigation?.inDoorNavGraph?.nodes?.filter { node ->
+            !node.type.containsAny(
+                NodeType.STAIRS,
+                NodeType.TRANSFER_TO_ANOTHER_BUILDING,
+                NodeType.TURN,
+            ) && node.label != null
+        } ?: listOf()
+    }
+
+    val availableBuildings = remember(nodesInfo) {
+        nodesInfo.map { it.buildNum }.distinct().sorted()
+    }
+
+    val availableFloors = remember(nodesInfo, selectedBuilding) {
+        if (selectedBuilding != null) {
+            nodesInfo.filter { it.buildNum == selectedBuilding }
+                .map { it.floorNum }
+                .distinct()
+                .sorted()
+        } else {
+            emptyList()
+        }
+    }
+
+    val filteredNodes by remember(nodesInfo, selectedBuilding, selectedFloor, searchQuery) {
+        derivedStateOf {
+            val query = searchQuery.trim()
+            nodesInfo.mapNotNull { info ->
+                val matchBuilding = selectedBuilding == null || info.buildNum == selectedBuilding
+                val matchFloor = selectedFloor == null || info.floorNum == selectedFloor
+
+                if (!matchBuilding || !matchFloor) return@mapNotNull null
+
+                val searchScore = if (query.isEmpty()) {
+                    0
+                } else {
+                    val labelScore = info.label?.let { fuzzyMatch(query, it) }
+                    val idScore = fuzzyMatch(query, info.id)
+                    listOfNotNull(labelScore, idScore).minOrNull() ?: return@mapNotNull null
+                }
+
+                info to searchScore
+            }.sortedWith(compareBy<Pair<InDoorNode, Int>> { it.second }.thenBy { (info, _) ->
+                when {
+                    info.type.contains(NodeType.MAIN_ENTRANCE) -> {
+                        ((info.buildNum * 10 + info.floorNum) * 100) - 1
+                    }
+
+                    info.type.containsAny(NodeType.WC_MAN, NodeType.WC_WOMAN) -> {
+                        (info.buildNum * 10 + info.floorNum) * 100
+                    }
+
+                    info.type.contains(NodeType.AUDITORIUM) -> {
+                        info.label?.filter { it.isDigit() }?.toIntOrNull() ?: Int.MAX_VALUE
+                    }
+
+                    else -> {
+                        (info.buildNum * 10 + info.floorNum) * 100
+                    }
+                }
+            }).map { it.first }
+        }
+    }
+    val outDoorMainEnterances: List<NavNode> = masterNavigation?.outDoorNavGraph?.nodes?.filter {
+        it.type.contains(NodeType.MAIN_ENTRANCE)
+    } ?: emptyList()
+    val inDoorMainEnterances: List<NavNode> by remember(filteredNodes) {
+        derivedStateOf { filteredNodes.filter { it.type.contains(NodeType.MAIN_ENTRANCE) } }
+    }
+    val mainEntranceNodes by remember(inDoorMainEnterances, outDoorMainEnterances) {
+        derivedStateOf {
+            (inDoorMainEnterances + outDoorMainEnterances)
+                .filter {
+                    it.buildNum != 0 && it.buildNum != null
+                }
+                .distinctBy { it.buildNum }
+                .sortedBy { it.buildNum }
+
+        }
+    }
+
+    val poiNodes by remember(filteredNodes) {
+        derivedStateOf {
+            filteredNodes.filter {
+                it.type.contains(NodeType.POINT_OF_INTEREST) &&
+                        !it.type.contains(NodeType.MAIN_ENTRANCE)
+            }
+        }
+    }
+
+    val outDoorPoiNodes by remember(masterNavigation, searchQuery) {
+        derivedStateOf {
+            val query = searchQuery.trim()
+            masterNavigation?.outDoorNavGraph?.nodes?.mapNotNull { node ->
+                if (!node.type.contains(NodeType.POINT_OF_INTEREST) ||
+                    node.type.contains(NodeType.TURN) ||
+                    node.label == null
+                ) return@mapNotNull null
+
+                val score = if (query.isEmpty()) {
+                    0
+                } else {
+                    fuzzyMatch(query, node.label) ?: return@mapNotNull null
+                }
+                node to score
+            }?.sortedBy { it.second }?.map { it.first } ?: emptyList()
+        }
+    }
+
+    val listNodes by remember(filteredNodes) {
+        derivedStateOf {
+            filteredNodes.filter {
+                !it.type.contains(NodeType.POINT_OF_INTEREST) &&
+                        !it.type.contains(NodeType.MAIN_ENTRANCE)
+            }
+        }
+    }
+
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        if (isStartNode) stringResource(Res.string.start_point) else stringResource(Res.string.destination_placeholder),
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.Outlined.ArrowBack, contentDescription = stringResource(Res.string.cd_back))
+                    }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                )
+            )
+        }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize()
+        ) {
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                placeholder = { Text(stringResource(Res.string.search_placeholder)) },
+                leadingIcon = { Icon(Icons.Default.Search, null) },
+                trailingIcon = if (searchQuery.isNotEmpty()) {
+                    {
+                        IconButton(onClick = { searchQuery = "" }) {
+                            Icon(Icons.Default.Close, null)
+                        }
+                    }
+                } else null,
+                shape = RoundedCornerShape(24.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = Color.Transparent
+                ),
+                singleLine = true
+            )
+
+            if (masterNavigation == null) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            } else {
+                if (availableBuildings.isNotEmpty()) {
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    ) {
+                        items(availableBuildings) { building ->
+                            InputChip(
+                                selected = selectedBuilding == building,
+                                onClick = {
+                                    if (selectedBuilding == building) {
+                                        selectedBuilding = null
+                                        selectedFloor = null
+                                    } else {
+                                        selectedBuilding = building
+                                        selectedFloor = null
+                                    }
+                                },
+                                label = { Text(stringResource(Res.string.building_filter_format, building)) },
+                                colors = InputChipDefaults.inputChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                    selectedTrailingIconColor = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                            )
+                        }
+                    }
+                }
+
+                if (selectedBuilding != null && availableFloors.isNotEmpty()) {
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    ) {
+                        items(availableFloors) { floor ->
+                            InputChip(
+                                selected = selectedFloor == floor,
+                                onClick = {
+                                    selectedFloor = if (selectedFloor == floor) null else floor
+                                },
+                                label = { Text(stringResource(Res.string.floor_filter_format, floor)) },
+                                colors = InputChipDefaults.inputChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    selectedTrailingIconColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            )
+                        }
+                    }
+                }
+
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(minSize = 220.dp),
+                    contentPadding = PaddingValues(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+
+                    if (!isStartNode && isSelectedStartNode && searchQuery.isEmpty() && selectedBuilding == null) {
+                        item {
+                            Text(
+                                text = stringResource(Res.string.nearest_quick_actions),
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(bottom = 8.dp, start = 4.dp)
+                            )
+                        }
+                        item(span = { GridItemSpan(maxLineSpan) }) {
+                            QuickActionRow(
+                                onManWcClick = { handleSelection(SelectNodeResult.NearestManWC) },
+                                onWomanWcClick = { handleSelection(SelectNodeResult.NearestWomanWC) },
+                                onExitClick = { handleSelection(SelectNodeResult.NearestMainEntrance) }
+                            )
+                        }
+
+                        item(span = { GridItemSpan(maxLineSpan) }) {
+                            Spacer(Modifier.height(4.dp))
+                        }
+                    }
+
+                    if (mainEntranceNodes.isNotEmpty()) {
+                        item(span = { GridItemSpan(maxLineSpan) }) {
+                            Column {
+                                Text(
+                                    text = stringResource(Res.string.main_entrances),
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.padding(bottom = 8.dp, start = 4.dp)
+                                )
+                                FlowRow(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    mainEntranceNodes.forEach { info ->
+                                        SuggestionChip(
+                                            onClick = {
+                                                if (info is InDoorNode) {
+                                                    handleSelection(SelectNodeResult.SelectedNode(info))
+                                                } else if (info is OutDoorNode) {
+                                                    handleSelection(SelectNodeResult.SelectedOutDoorNode(info))
+                                                }
+                                            },
+                                            label = {
+                                                Text(
+                                                    stringResource(Res.string.building_corpus_format, info.buildNum ?: 0)
+                                                )
+                                            },
+                                            icon = {
+                                                Icon(
+                                                    Icons.Outlined.ExitToApp,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(16.dp)
+                                                )
+                                            },
+                                            colors = SuggestionChipDefaults.suggestionChipColors(
+                                                containerColor = enterColor,
+                                                labelColor = contentColorFor(enterColor),
+                                                iconContentColor = contentColorFor(enterColor)
+                                            ),
+                                            border = SuggestionChipDefaults.suggestionChipBorder(
+                                                enabled = true,
+                                                borderColor = Color.Transparent
+                                            ),
+                                            shape = RoundedCornerShape(12.dp)
+                                        )
+                                    }
+                                }
+                                Spacer(Modifier.height(16.dp))
+                            }
+                        }
+                    }
+
+                    if (outDoorPoiNodes.isNotEmpty() && selectedBuilding == null) {
+                        item(span = { GridItemSpan(maxLineSpan) }) {
+                            val outdoorTitleColor = if (isDarkTheme) Color(0xFF81C784) else Color(0xFF2E7D32)
+                            val outdoorContainerColor = if (isDarkTheme) Color(0xFF2E7D32).copy(alpha = 0.4f) else Color(0xFF81C784).copy(alpha = 0.3f)
+                            val outdoorLabelColor = if (isDarkTheme) Color(0xFFA5D6A7) else Color(0xFF1B5E20)
+                            val outdoorIconColor = if (isDarkTheme) Color(0xFF81C784) else Color(0xFF2E7D32)
+
+                            Column {
+                                Text(
+                                    text = stringResource(Res.string.campus_outdoor),
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = outdoorTitleColor,
+                                    modifier = Modifier.padding(bottom = 8.dp, start = 4.dp)
+                                )
+                                FlowRow(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    outDoorPoiNodes.forEach { node ->
+                                        SuggestionChip(
+                                            onClick = {
+                                                handleSelection(
+                                                    SelectNodeResult.SelectedOutDoorNode(node)
+                                                )
+                                            },
+                                            label = { Text(node.label ?: node.id) },
+                                            colors = SuggestionChipDefaults.suggestionChipColors(
+                                                containerColor = outdoorContainerColor,
+                                                labelColor = outdoorLabelColor,
+                                                iconContentColor = outdoorIconColor
+                                            ),
+                                            border = SuggestionChipDefaults.suggestionChipBorder(
+                                                enabled = true,
+                                                borderColor = Color.Transparent
+                                            ),
+                                            shape = RoundedCornerShape(12.dp)
+                                        )
+                                    }
+                                }
+                                Spacer(Modifier.height(16.dp))
+                            }
+                        }
+                    }
+
+                    if (poiNodes.isNotEmpty()) {
+                        item(span = { GridItemSpan(maxLineSpan) }) {
+                            Column {
+                                Text(
+                                    text = stringResource(Res.string.indoor_poi),
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.padding(bottom = 8.dp, start = 4.dp)
+                                )
+                                FlowRow(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    poiNodes.forEach { info ->
+                                        SuggestionChip(
+                                            onClick = {
+                                                handleSelection(
+                                                    SelectNodeResult.SelectedNode(
+                                                        info
+                                                    )
+                                                )
+                                            },
+                                            label = {
+                                                Text(
+                                                    stringResource(Res.string.poi_info_format, info.label ?: info.id, info.buildNum ?: 0, info.floorNum ?: 0)
+                                                )
+                                            },
+                                            icon = {
+                                                Icon(
+                                                    Icons.Outlined.Star,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(16.dp)
+                                                )
+                                            },
+                                            colors = SuggestionChipDefaults.suggestionChipColors(
+                                                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                                labelColor = MaterialTheme.colorScheme.onSurface,
+                                                iconContentColor = MaterialTheme.colorScheme.primary
+                                            ),
+                                            border = SuggestionChipDefaults.suggestionChipBorder(
+                                                enabled = true,
+                                                borderColor = Color.Transparent
+                                            ),
+                                            shape = RoundedCornerShape(12.dp)
+                                        )
+                                    }
+                                }
+                                Spacer(Modifier.height(16.dp))
+                            }
+                        }
+                    }
+
+                    items(
+                        listNodes,
+                        key = { it.id }
+                    ) { info ->
+                        NodeListItem(node = info) {
+                            handleSelection(SelectNodeResult.SelectedNode(info))
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun QuickActionRow(
+    onManWcClick: () -> Unit,
+    onWomanWcClick: () -> Unit,
+    onExitClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        QuickActionButton(
+            icon = Icons.Outlined.Man,
+            label = stringResource(Res.string.wc),
+            color = MaterialTheme.colorScheme.tertiaryContainer,
+            contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+            modifier = Modifier.weight(1f),
+            onClick = onManWcClick
+        )
+        QuickActionButton(
+            icon = Icons.Outlined.Woman,
+            label = stringResource(Res.string.wc),
+            color = MaterialTheme.colorScheme.tertiaryContainer,
+            contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+            modifier = Modifier.weight(1f),
+            onClick = onWomanWcClick
+        )
+        QuickActionButton(
+            icon = Icons.Outlined.ExitToApp,
+            label = stringResource(Res.string.exit_label),
+            color = enterColor,
+            contentColor = contentColorFor(enterColor),
+            modifier = Modifier.weight(1f),
+            onClick = onExitClick
+        )
+    }
+}
+
+@Composable
+fun QuickActionButton(
+    icon: ImageVector,
+    label: String,
+    color: Color,
+    contentColor: Color,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(color)
+            .clickable(onClick = onClick)
+            .padding(vertical = 12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(imageVector = icon, contentDescription = null, tint = contentColor)
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = contentColor
+        )
+    }
+}
+
+@Composable
+fun NodeListItem(node: InDoorNode, onClick: () -> Unit) {
+    val (icon, color) = when {
+        node.type.contains(NodeType.POINT_OF_INTEREST) -> Icons.Outlined.Star to MaterialTheme.colorScheme.primary
+        node.type.contains(NodeType.MAIN_ENTRANCE) -> Icons.Outlined.ExitToApp to Color(0xFF4CAF50)
+        node.type.containsAll(
+            listOf(NodeType.WC_WOMAN, NodeType.WC_MAN)
+        ) -> Icons.Outlined.Wc to Color(0xFF9B27AF)
+
+        node.type.contains(NodeType.WC_MAN) -> Icons.Outlined.Man to Color(0xFF4A90E2)
+        node.type.contains(NodeType.WC_WOMAN) -> Icons.Outlined.Woman to Color(0xFFE91E63)
+        node.type.contains(NodeType.AUDITORIUM) -> Icons.Outlined.Class to MaterialTheme.colorScheme.secondary
+        node.type.contains(NodeType.TRANSFER_TO_ANOTHER_BUILDING) -> Icons.Outlined.DirectionsWalk to MaterialTheme.colorScheme.primary
+        else -> Icons.Outlined.Place to MaterialTheme.colorScheme.onSurfaceVariant
+    }
+
+    ListItem(
+        headlineContent = {
+            Text(
+                text = (node.label ?: node.id),
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+        },
+        leadingContent = {
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(color.copy(alpha = 0.1f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = color,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+        },
+        modifier = Modifier
+            .clip(RoundedCornerShape(12.dp))
+            .clickable(onClick = onClick),
+        colors = ListItemDefaults.colors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+        )
+    )
+}

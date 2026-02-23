@@ -86,7 +86,7 @@ The server provides building floor plans, navigation graphs, and route calculati
 ### Minimal Example
 
 ```kotlin
-import com.oriooneee.jet.navigation.presentation.navigation.NavigationApp
+import com.oriooneee.jena.presentation.navigation.NavigationApp
 
 @Composable
 fun App(isDarkTheme: Boolean = false) {

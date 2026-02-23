@@ -3,8 +3,8 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.window.ComposeUIViewController
-import com.oriooneee.jet.navigation.presentation.LocalNativeFactory
-import com.oriooneee.jet.navigation.presentation.NativeFactory
+import com.oriooneee.jena.presentation.LocalNativeFactory
+import com.oriooneee.jena.presentation.NativeFactory
 import platform.UIKit.UIViewController
 import sample.app.App
 

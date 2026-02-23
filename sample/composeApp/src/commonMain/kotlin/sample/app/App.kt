@@ -6,7 +6,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.oriooneee.jet.navigation.presentation.navigation.NavigationApp
+import com.oriooneee.jena.presentation.navigation.NavigationApp
 
 @Composable
 fun App(

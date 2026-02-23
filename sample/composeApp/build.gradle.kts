@@ -34,7 +34,7 @@ kotlin {
             implementation(libs.foundation)
             implementation(libs.jetbrains.material3)
 
-            implementation(project(":JetNavigation"))
+            implementation(project(":Jena"))
         }
 
         androidMain.dependencies {

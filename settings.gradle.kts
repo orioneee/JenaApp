@@ -1,4 +1,4 @@
-rootProject.name = "JetNavigation"
+rootProject.name = "Jena"
 
 pluginManagement {
     repositories {
@@ -34,6 +34,6 @@ dependencyResolutionManagement {
 
     }
 }
-include(":JetNavigation")
+include(":Jena")
 include(":sample:composeApp")
 
