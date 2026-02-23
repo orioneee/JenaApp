@@ -177,7 +177,7 @@ buildConfig {
 
     val baseUrl = "BASE_URL".getAsEnv()
 
-    require(googleMapsApiKey.isNotBlank()) { "GOOGLE_MAPS_API_KEY is not set in environment variables or local.properties" }
+//    require(googleMapsApiKey.isNotBlank()) { "GOOGLE_MAPS_API_KEY is not set in environment variables or local.properties" }
 
     require(baseUrl.isNotBlank()) { "BASE_URL is not set in environment variables or local.properties" }
 
