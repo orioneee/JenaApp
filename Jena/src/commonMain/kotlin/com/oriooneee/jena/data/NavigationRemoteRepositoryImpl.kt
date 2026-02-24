@@ -11,12 +11,21 @@ import io.ktor.http.URLProtocol
 import io.ktor.http.appendPathSegments
 import io.ktor.http.encodedPath
 import io.ktor.http.takeFrom
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
 
 internal expect val BuildConfig.API_KEY: String
 
 class NavigationRemoteRepositoryImpl(
     private val client: HttpClient,
 ) : NavigationRemoteRepository {
+    private val _masterNavigation = MutableStateFlow<Result<MasterNavigation>?>(null)
+
+    override val masterNavigationFlow: Flow<MasterNavigation>
+        get() = _masterNavigation.map { it?.getOrNull() }.filterNotNull()
+
     companion object {
         val VNTU_COORDINATES = Coordinates(
             latitude = 49.2338836,
@@ -24,14 +33,9 @@ class NavigationRemoteRepositoryImpl(
         )
     }
 
-    private var cachedNavigation: MasterNavigation? = null
 
-    override suspend fun getMainNavigation(): Result<MasterNavigation> {
-        cachedNavigation?.let {
-            return Result.success(it)
-        }
-
-        return runCatching {
+    override suspend fun updateMasterNavigation(){
+        val result = runCatching {
             val res = client.get {
                 url {
                     takeFrom(BuildConfig.BASE_URL)
@@ -39,11 +43,10 @@ class NavigationRemoteRepositoryImpl(
                 }
             }.body<MasterNavigation>()
             res
-        }.onSuccess {
-            cachedNavigation = it
         }.onFailure {
             it.printStackTrace()
         }
+        _masterNavigation.value = result
     }
 
     override suspend fun getWeather(): Result<WeatherResponse> {

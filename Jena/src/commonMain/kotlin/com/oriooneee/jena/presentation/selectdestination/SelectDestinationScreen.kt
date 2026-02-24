@@ -55,6 +55,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -70,7 +71,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.oriooneee.jena.data.NavigationRemoteRepository
 import com.oriooneee.jena.domain.entities.graph.InDoorNode
-import com.oriooneee.jena.domain.entities.graph.MasterNavigation
 import com.oriooneee.jena.domain.entities.graph.NavNode
 import com.oriooneee.jena.domain.entities.graph.NodeType
 import com.oriooneee.jena.domain.entities.graph.OutDoorNode
@@ -79,11 +79,24 @@ import com.oriooneee.jena.presentation.navigation.LocalNavController
 import com.oriooneee.jena.presentation.screen.KEY_SELECTED_END_NODE
 import com.oriooneee.jena.presentation.screen.KEY_SELECTED_START_NODE
 import com.oriooneee.jena.utils.containsAny
+import jena.generated.resources.Res
+import jena.generated.resources.building_corpus_format
+import jena.generated.resources.building_filter_format
+import jena.generated.resources.campus_outdoor
+import jena.generated.resources.cd_back
+import jena.generated.resources.destination_placeholder
+import jena.generated.resources.exit_label
+import jena.generated.resources.floor_filter_format
+import jena.generated.resources.indoor_poi
+import jena.generated.resources.main_entrances
+import jena.generated.resources.nearest_quick_actions
+import jena.generated.resources.poi_info_format
+import jena.generated.resources.search_placeholder
+import jena.generated.resources.start_point
+import jena.generated.resources.wc
 import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
-import jena.generated.resources.Res
-import jena.generated.resources.*
 
 val enterColor = Color(0xFF4CAF50).copy(alpha = 0.35f)
 
@@ -127,15 +140,15 @@ fun SelectDestinationScreen(
     onBack: () -> Unit
 ) {
     val navController = LocalNavController.current
-    var masterNavigation by remember { mutableStateOf<MasterNavigation?>(null) }
     val navigationRemoteRepository: NavigationRemoteRepository = koinInject()
+    val masterNavigation by navigationRemoteRepository.masterNavigationFlow.collectAsState(null)
     var searchQuery by remember { mutableStateOf("") }
 
     var selectedBuilding by remember { mutableStateOf<Int?>(null) }
     var selectedFloor by remember { mutableStateOf<Int?>(null) }
 
     LaunchedEffect(Unit) {
-        masterNavigation = navigationRemoteRepository.getMainNavigation().getOrNull()
+        navigationRemoteRepository.updateMasterNavigation()
     }
 
     fun handleSelection(result: SelectNodeResult) {

@@ -6,12 +6,10 @@ import com.oriooneee.jena.data.NavigationRemoteRepository
 import com.oriooneee.jena.domain.entities.NavigationDirection
 import com.oriooneee.jena.domain.entities.NavigationStep
 import com.oriooneee.jena.domain.entities.graph.InDoorNode
-import com.oriooneee.jena.domain.entities.graph.MasterNavigation
 import com.oriooneee.jena.domain.entities.graph.SelectNodeResult
 import com.oriooneee.jena.engine.NavigationEngine
 import com.oriooneee.jena.engine.models.ResolvedNode
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
@@ -53,14 +51,18 @@ class NavigationViewModel(
     private val _uiState = MutableStateFlow(NavigationUiState())
     val uiState = _uiState.asStateFlow()
 
-    private val _masterNavigation = MutableStateFlow<MasterNavigation?>(null)
-    val navigationDataUpdatedAt = _masterNavigation.map { it?.createdAt }.stateIn(
+    private val masterNavigation = remoteRepository.masterNavigationFlow.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        null
+    )
+    val navigationDataUpdatedAt = masterNavigation.map { it?.createdAt }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000),
         null
     )
 
-    private val navigationEngine = _masterNavigation.filterNotNull().map { navigation ->
+    private val navigationEngine = masterNavigation.filterNotNull().map { navigation ->
         NavigationEngine(navigation, false)
     }
 
@@ -74,10 +76,9 @@ class NavigationViewModel(
             _uiState.update { it.copy(isLoading = true) }
 
             try {
-                val navData = async {
-                    remoteRepository.getMainNavigation().getOrNull()
+                launch {
+                    remoteRepository.updateMasterNavigation()
                 }
-                _masterNavigation.value = navData.await()
                 _uiState.update {
                     it.copy(
                         isLoading = false
@@ -90,6 +91,7 @@ class NavigationViewModel(
     }
 
     fun onStartNodeSelected(result: SelectNodeResult) {
+        println("Selected start: $result")
         viewModelScope.launch(Dispatchers.Default) {
             val engine = navigationEngine.first()
             val referenceNode = uiState.value.endNode
@@ -118,6 +120,7 @@ class NavigationViewModel(
     }
 
     fun onEndNodeSelected(result: SelectNodeResult) {
+        println("Seelcted end: $result")
         viewModelScope.launch(Dispatchers.Default) {
             val engine = navigationEngine.first()
             val referenceNode = uiState.value.startNode

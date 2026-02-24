@@ -45,9 +45,20 @@ import com.oriooneee.jena.domain.entities.NavigationStep
 import com.oriooneee.jena.presentation.MapComponent
 import com.oriooneee.jena.presentation.screen.getRoutePresentation
 import com.oriooneee.jena.presentation.screen.map.ZoomableMapCanvas
-import org.jetbrains.compose.resources.stringResource
 import jena.generated.resources.Res
-import jena.generated.resources.*
+import jena.generated.resources.cd_close
+import jena.generated.resources.choose_route_title
+import jena.generated.resources.enter_building_format
+import jena.generated.resources.exit_building
+import jena.generated.resources.go_down_to_floor_format
+import jena.generated.resources.go_up_to_floor_format
+import jena.generated.resources.step_floor_bldg_format
+import jena.generated.resources.steps_count_format
+import jena.generated.resources.time_min_format
+import jena.generated.resources.time_sec_format
+import jena.generated.resources.to_building_format
+import jena.generated.resources.walk_outdoors
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 private fun getStepLabel(step: NavigationStep): String = when (step) {
@@ -76,8 +87,8 @@ private fun StepPreview(
 
     Card(
         modifier = modifier
-            .width(200.dp)
-            .height(200.dp),
+            .width(300.dp)
+            .height(250.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow

@@ -103,6 +103,10 @@ fun NavigationScreen(
     viewModel: NavigationViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val steps = uiState.navigationSteps
+    LaunchedEffect(steps){
+        println("NavigationScreen: steps updated: ${steps}")
+    }
     val currentStep = uiState.currentStep
     var isHiddenMapCompoent by remember { mutableStateOf(false) }
     var shouldHideMap by remember { mutableStateOf(false) }
